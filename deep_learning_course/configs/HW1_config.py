@@ -40,6 +40,8 @@ class HW1Q2cfg():
         loss_beta = 1.0 # used for SmoothL1Loss
 
         early_stopping = True
+        patience = 100
+        
         add_noise = True
         class noise:
             noise_std = 0.005

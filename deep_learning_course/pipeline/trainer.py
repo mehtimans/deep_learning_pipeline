@@ -1,17 +1,22 @@
-import numpy as np
+"""
+This source code is part of a deep learning coursework and research framework.
+It is provided for educational use, experimentation, and academic projects.
+
+You are free to use, modify, and redistribute this code for personal, academic,
+or research purposes.
+
+# Author: mahdi mansouri
+# GitHub: https://github.com/mehtimans
+# Date: March 2026
+"""
+
 import pandas as pd 
-import argparse
 import os
-import time
 import matplotlib.pyplot as plt
-from datetime import datetime
 import copy
 import torch
-import json 
 import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset, random_split
-
-from deep_learning_course.utils import split_dataset, compute_normalization_stats
+from torch.utils.data import DataLoader
 
 class Trainer:
     def __init__(
@@ -27,7 +32,9 @@ class Trainer:
         noise_std: float = 0.0,
         noise_frac: float = 0.0,
         early_stopping: bool = True,
-        log_dir: str
+        patience: int = 100,
+        log_dir: str  = "./logs",
+        enable_plots:bool = True
     ):
         self.model = model.to(device)
         self.train_dl = train_dl
@@ -50,7 +57,7 @@ class Trainer:
         
         # early stopping parameters
         self.early_stopping = early_stopping
-        self.patience = 100
+        self.patience = patience
         self.patience_counter = 0
 
         self.log_dir = log_dir
@@ -63,6 +70,8 @@ class Trainer:
             "train_mse": [], "val_mse": [],
             "train_r2":   [], "val_r2":   []
         }
+
+        self.enable_plots = enable_plots
 
     
     def train(self):
@@ -88,7 +97,7 @@ class Trainer:
             # save best model
             if val_rmse < self.best_val_rmse:
                 self.best_val_rmse = val_rmse 
-                self.best_model = copy.deepcopy(self.model).cpu()
+                self.best_model = copy.deepcopy(self.model).to("cpu")
                 print(
                     f"Epoch {epoch:03d} | "
                     f"Train RMSE: {train_rmse:.4f} | Val RMSE: {val_rmse:.4f} | "
@@ -108,7 +117,8 @@ class Trainer:
                 break
 
         print(f"\nBest Validation RMSE: {self.best_val_rmse:.4f}")
-        self.save_log()
+        self.save_log(self.history)
+        self.plotter(self.history)
         
         return self.best_model
 
@@ -198,7 +208,7 @@ class Trainer:
 
         return val_loss, val_mse, val_rmse, val_r2
 
-    def save_log(self, log_dir=None):
+    def save_log(self, dict_history: dict, log_dir=None):
         """
         Save the metrics history to a CSV file derived from self.history.
         """
@@ -206,7 +216,7 @@ class Trainer:
         out_dir = log_dir if log_dir is not None else self.log_dir
         os.makedirs(out_dir, exist_ok=True)
 
-        df = pd.DataFrame(self.history)
+        df = pd.DataFrame(dict_history)
 
         out_path = os.path.join(out_dir, "training_log.csv")
         tmp_path = out_path + ".tmp"
@@ -219,4 +229,36 @@ class Trainer:
 
         print(f"Training log saved to {out_path}")
         self.log_path = out_path
+
+    def plotter(self, data, x_label="epoch", log_dir=None, show=False):
+
+        if not self.enable_plots:
+            return
+        
+        out_dir = log_dir if log_dir is not None else self.log_dir
+        os.makedirs(out_dir, exist_ok=True)
+        
+        columns = [k for k in data.keys() if k != x_label]
+
+        for column in columns:
+            plt.figure(figsize=(8, 4))
+            plt.plot(data[x_label], data[column])
+
+            plt.xlabel(x_label)
+            plt.ylabel(column)
+            # plt.title(f"{column} over f{x_label}")
+
+            plt.grid(True)
+            plt.tight_layout()
+
+            fig_path = os.path.join(out_dir, f"{column}.png")
+            plt.savefig(fig_path)
+            # print(f"Saved: {fig_path}")
+
+            if show:
+                plt.show(block=True)
+
+            plt.close()
+        
+        print(f"Training plots saved to {out_dir}")
 

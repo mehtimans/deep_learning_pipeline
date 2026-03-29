@@ -124,10 +124,11 @@ if __name__ == "__main__":
         noise_std=cfg.training.noise.noise_std,
         noise_frac=cfg.training.noise.noise_frac,
         early_stopping=cfg.training.early_stopping,
+        patience=cfg.training.patience,
         log_dir=cfg.logger.log_dir 
     )
 
-    best_model = trainer.train()
+    best_model = trainer.train() # Note: best_model is stored on CPU for portability
 
     # save model as a jit file
     model_path = save_model_jit(best_model, cfg.logger.log_dir)
