@@ -1,5 +1,7 @@
 
 
+logs/MLP/*
+!logs/MLP/.gitkeep
 
 __pycache__/
 *.pyc
