@@ -10,4 +10,5 @@ or research purposes.
 # Date: March 2026
 """
 
+from .Base.base_config import BaseConfig
 from .HW1_config import HW1Q1cfg, HW1Q2cfg
