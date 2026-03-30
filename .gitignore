@@ -3,6 +3,9 @@
 logs/MLP/*
 !logs/MLP/.gitkeep
 
+logs/Autoencoder/*
+!logs/Autoencoder/.gitkeep
+
 __pycache__/
 *.pyc
 *.egg-info/

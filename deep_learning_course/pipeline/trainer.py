@@ -176,6 +176,7 @@ class Trainer:
         return train_loss, train_mse, train_rmse, train_r2
 
 
+    @torch.no_grad()
     def validate_epoch(self):
         """
         Run one validation epoch without gradient updates.
@@ -186,17 +187,16 @@ class Trainer:
         sum_y = 0.0
         sum_y2 = 0.0
 
-        with torch.no_grad():
-            for xb, yb in self.val_dl:
-                xb, yb = xb.to(self.device), yb.to(self.device)
+        for xb, yb in self.val_dl:
+            xb, yb = xb.to(self.device), yb.to(self.device)
 
-                pred = self.model(xb)
-                loss = self.loss_fn(pred, yb)
-                
-                total_loss += loss.item() * xb.size(0)
-                ss_res += torch.sum((yb - pred) ** 2).item()
-                sum_y += torch.sum(yb).item()
-                sum_y2 += torch.sum(yb ** 2).item()
+            pred = self.model(xb)
+            loss = self.loss_fn(pred, yb)
+            
+            total_loss += loss.item() * xb.size(0)
+            ss_res += torch.sum((yb - pred) ** 2).item()
+            sum_y += torch.sum(yb).item()
+            sum_y2 += torch.sum(yb ** 2).item()
 
         val_loss = total_loss / self.n_val
         

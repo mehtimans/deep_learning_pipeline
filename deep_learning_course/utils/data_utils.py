@@ -12,7 +12,7 @@ or research purposes.
 from typing import Tuple
 import torch
 from torch import Tensor
-from torch.utils.data import TensorDataset, DataLoader, Subset, random_split
+from torch.utils.data import TensorDataset, DataLoader, Dataset, random_split
 from datetime import datetime
 import os
 import copy
@@ -22,23 +22,19 @@ from deep_learning_course import DEEP_LEARNING_COURSE_ROOT_DIR
 def split_dataset(
     X: Tensor,
     Y: Tensor,
-    batch_size: int = 32,
     val_split: float = 0.2,
-) -> Tuple[Subset, Subset, DataLoader, DataLoader]:
+) -> Tuple[Dataset, Dataset]:
     """
-    Split tensors into training and validation sets and create DataLoaders.
+    Split tensors into training and validation sets
 
     Args:
         X (Tensor): Feature tensor of shape (N, D)
         Y (Tensor): Target tensor of shape (N, 1) or (N,)
-        batch_size (int): Batch size for the DataLoaders
         val_split (float): Fraction of the dataset used for validation
 
     Returns:
-        train_dataset (Subset): Training subset
-        val_dataset (Subset): Validation subset
-        train_loader (DataLoader): DataLoader for training
-        val_loader (DataLoader): DataLoader for validation
+        train_dataset (Dataset): Training Dataset
+        val_dataset (Dataset): Validation Dataset
     """
 
     ds = TensorDataset(X, Y)
@@ -48,18 +44,38 @@ def split_dataset(
 
     train_ds, val_ds = random_split(ds, [n_train, n_val])
 
+    return train_ds, val_ds
+
+def get_dataloader(
+        train_ds: Dataset, 
+        val_ds: Dataset, 
+        batch_size: int = 32
+        ) -> Tuple[DataLoader, DataLoader]:
+    """
+    Create DataLoader objects for training and validation Datasets.
+
+    Args:
+        train_ds (Dataset): Training dataset Dataset
+        val_ds (Dataset): Validation dataset Dataset
+        batch_size (int): Number of samples per batch
+
+    Returns:
+        train_loader (DataLoader): DataLoader for training data
+        val_loader (DataLoader): DataLoader for validation data
+    """
+    
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
     val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
 
-    return train_ds, val_ds, train_dl, val_dl
+    return train_dl, val_dl
 
 
-def compute_normalization_stats(train_ds: Subset) -> Tuple[Tensor, Tensor]:
+def compute_normalization_stats(train_ds: Dataset) -> Tuple[Tensor, Tensor]:
     """
     Compute feature-wise mean and standard deviation using ONLY the training data.
 
     Args:
-        train_dataset (Subset): Training subset returned by random_split
+        train_dataset (Dataset): Training Dataset returned by random_split
 
     Returns:
         mean (Tensor): Feature-wise mean of shape (D,)

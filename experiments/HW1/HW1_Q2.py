@@ -10,9 +10,7 @@ or research purposes.
 # Date: March 2026
 """
 
-import numpy as np
 import pandas as pd 
-import matplotlib.pyplot as plt
 import os
 import json 
 
@@ -21,7 +19,7 @@ import torch
 from deep_learning_course.models import MLPNetwork
 from deep_learning_course.configs import HW1Q2cfg
 from deep_learning_course.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
-from deep_learning_course.utils import split_dataset, compute_normalization_stats, get_log_dir, save_model_jit
+from deep_learning_course.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
 from deep_learning_course.utils import get_loss, get_optimizer
 from deep_learning_course.pipeline import Trainer
 from deep_learning_course import DEEP_LEARNING_COURSE_RESOURCES_DIR, DEEP_LEARNING_COURSE_ROOT_DIR
@@ -81,14 +79,17 @@ if __name__ == "__main__":
     cfg.logger.log_dir = get_log_dir(cfg.logger.log_dir, cfg.logger.train_label)
 
     # load dataset 
-    csv_folder = os.path.join(DEEP_LEARNING_COURSE_RESOURCES_DIR, "data", "HW1","HW1_Q2_dataset")
+    csv_folder = os.path.join(DEEP_LEARNING_COURSE_RESOURCES_DIR, "data", "Life_Expectancy_Data")
     csv_path = os.path.join(csv_folder, "Life Expectancy Data.csv")
     X, Y = load_dataset(csv_path)
     print("X shape", X.size())
     print("Y shape", Y.size())
 
     # split
-    train_ds, val_ds, train_dl, val_dl = split_dataset(X, Y, cfg.training.batch_size, cfg.evaluation.val_split)
+    train_ds, val_ds = split_dataset(X, Y, cfg.evaluation.val_split)
+
+    # get dataloaders
+    train_dl, val_dl = get_dataloader(train_ds, val_ds, cfg.training.batch_size)
 
     # compute_normalization_stats
     mean, std = compute_normalization_stats(train_ds)
@@ -139,5 +140,6 @@ if __name__ == "__main__":
         json.dump(cfg_dict, f, indent=4)
     
     print(f"config saved to {config_path}")
+
 
 
