@@ -16,28 +16,29 @@ class HW1Q1cfg(BaseConfig):
     seed = 42
     device = 'cuda'
     class training(BaseConfig.training):
-        hidden_dims = [16]
-        epochs = 3000
-        batch_size = 64
-        learning_rate = 1e-4
+        encoder_hidden_dims = [128]
+        decoder_hidden_dims = [128]
+        latent_size = 8
+        epochs = 30
+        batch_size = 256
+        learning_rate = 1e-3
 
         activation = 'relu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid 
         optimizer = "adam" # e.g. "adam", "sgd"
-        weight_decay = 1e-4 # L2 regularization, This extra term penalizes large weights.
+        weight_decay = 1e-5 # L2 regularization, This extra term penalizes large weights.
         momentum = 0.9 # used when optimizer == "sgd"
         loss = "mse"  # e.g. "mse", "smooth_l1", "l1"
         loss_beta = 1.0 # used for SmoothL1Loss
 
         early_stopping = True
-        patience = 100
+        patience = 10
         
         add_noise = True
         class noise(BaseConfig.training.noise):
-            noise_std = 0.005
+            noise_std = 0.01
             noise_frac = 0.02
 
     class evaluation(BaseConfig.evaluation):
-        val_split = 0.2
         load_run = -1
 
     class logger(BaseConfig.logger):
