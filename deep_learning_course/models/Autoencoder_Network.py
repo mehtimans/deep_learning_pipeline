@@ -43,26 +43,34 @@ class AutoEncoderNetwork(nn.Module):
 
         # Encoder Network
         encoder_layers = []
-        encoder_layers.append(nn.Linear(encoder_input_dim, encoder_hidden_dims[0]))
-        encoder_layers.append(get_activation(activation))
-        for e in range(len(encoder_hidden_dims)):
-            if e == len(encoder_hidden_dims)-1:
-                encoder_layers.append(nn.Linear(encoder_hidden_dims[e], latent_dim))
-            else:
-                encoder_layers.append(nn.Linear(encoder_hidden_dims[e], encoder_hidden_dims[e + 1]))
-                encoder_layers.append(get_activation(activation))
+        if len(encoder_hidden_dims) == 0:
+            encoder_layers.append(nn.Linear(encoder_input_dim, latent_dim))
+
+        else:
+            encoder_layers.append(nn.Linear(encoder_input_dim, encoder_hidden_dims[0]))
+            encoder_layers.append(get_activation(activation))
+            for e in range(len(encoder_hidden_dims)):
+                if e == len(encoder_hidden_dims)-1:
+                    encoder_layers.append(nn.Linear(encoder_hidden_dims[e], latent_dim))
+                else:
+                    encoder_layers.append(nn.Linear(encoder_hidden_dims[e], encoder_hidden_dims[e + 1]))
+                    encoder_layers.append(get_activation(activation))
         self.encoder_net = nn.Sequential(*encoder_layers)
 
         # Decoder Network
         decoder_layers = []
-        decoder_layers.append(nn.Linear(latent_dim, decoder_hidden_dims[0]))
-        decoder_layers.append(get_activation(activation))
-        for d in range(len(decoder_hidden_dims)):
-            if d == len(decoder_hidden_dims)-1:
-                decoder_layers.append(nn.Linear(decoder_hidden_dims[d], decoder_output_dim))
-            else:
-                decoder_layers.append(nn.Linear(decoder_hidden_dims[d], decoder_hidden_dims[d + 1]))
-                decoder_layers.append(get_activation(activation))
+        if len(decoder_hidden_dims) == 0:
+            decoder_layers.append(nn.Linear(latent_dim, decoder_output_dim))
+
+        else:
+            decoder_layers.append(nn.Linear(latent_dim, decoder_hidden_dims[0]))
+            decoder_layers.append(get_activation(activation))
+            for d in range(len(decoder_hidden_dims)):
+                if d == len(decoder_hidden_dims)-1:
+                    decoder_layers.append(nn.Linear(decoder_hidden_dims[d], decoder_output_dim))
+                else:
+                    decoder_layers.append(nn.Linear(decoder_hidden_dims[d], decoder_hidden_dims[d + 1]))
+                    decoder_layers.append(get_activation(activation))
         self.decoder_net = nn.Sequential(*decoder_layers)
 
 

@@ -40,14 +40,18 @@ class MLPNetwork(nn.Module):
         
         # network
         net_layers = []
-        net_layers.append(nn.Linear(mlp_input_dim, network_hidden_dims[0]))
-        net_layers.append(get_activation(activation))
-        for l in range(len(network_hidden_dims)):
-            if l == len(network_hidden_dims) - 1:
-                net_layers.append(nn.Linear(network_hidden_dims[l], mlp_output_dim))
-            else:
-                net_layers.append(nn.Linear(network_hidden_dims[l], network_hidden_dims[l + 1]))
-                net_layers.append(get_activation(activation))
+        if len(network_hidden_dims) == 0:
+            net_layers.append(nn.Linear(mlp_input_dim, mlp_output_dim))
+
+        else:
+            net_layers.append(nn.Linear(mlp_input_dim, network_hidden_dims[0]))
+            net_layers.append(get_activation(activation))
+            for l in range(len(network_hidden_dims)):
+                if l == len(network_hidden_dims) - 1:
+                    net_layers.append(nn.Linear(network_hidden_dims[l], mlp_output_dim))
+                else:
+                    net_layers.append(nn.Linear(network_hidden_dims[l], network_hidden_dims[l + 1]))
+                    net_layers.append(get_activation(activation))
         self.mlp_net = nn.Sequential(*net_layers)
 
         self.apply(_orthogonal_init)
