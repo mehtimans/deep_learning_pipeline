@@ -16,9 +16,9 @@ class HW1Q1cfg(BaseConfig):
     seed = 42
     device = 'cuda'
     class training(BaseConfig.training):
-        encoder_hidden_dims = [128]
-        decoder_hidden_dims = [128]
-        latent_size = 8
+        encoder_hidden_dims = [256, 128]
+        decoder_hidden_dims = [128, 256]
+        latent_size = 32
         epochs = 30
         batch_size = 256
         learning_rate = 1e-3

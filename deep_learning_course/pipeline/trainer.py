@@ -51,6 +51,9 @@ class Trainer:
         self.n_train = len(train_dl.dataset)
         self.n_val = len(val_dl.dataset)
 
+        _, yb = next(iter(train_dl))
+        self.D = yb[0].numel()
+
         # store the best model observed during training
         self.best_model = copy.deepcopy(self.model).cpu() 
         self.best_val_rmse = float("inf")
@@ -167,10 +170,10 @@ class Trainer:
 
         train_loss = total_loss / self.n_train
 
-        train_mse = ss_res / self.n_train
+        train_mse = ss_res / (self.n_train * self.D)
         train_rmse = train_mse ** 0.5
 
-        ss_tot = sum_y2 - (sum_y ** 2) / self.n_train
+        ss_tot = sum_y2 - (sum_y ** 2) / (self.n_train * self.D)
         train_r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
 
         return train_loss, train_mse, train_rmse, train_r2
@@ -200,10 +203,10 @@ class Trainer:
 
         val_loss = total_loss / self.n_val
         
-        val_mse = ss_res / self.n_val
+        val_mse = ss_res / (self.n_val * self.D)
         val_rmse = val_mse ** 0.5
 
-        ss_tot = sum_y2 - (sum_y ** 2) / self.n_val
+        ss_tot = sum_y2 - (sum_y ** 2) / (self.n_val * self.D)
         val_r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
 
         return val_loss, val_mse, val_rmse, val_r2
