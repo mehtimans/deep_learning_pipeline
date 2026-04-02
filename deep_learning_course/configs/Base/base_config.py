@@ -23,7 +23,7 @@ class BaseConfig():
         optimizer = "adam" # e.g. "adam", "sgd"
         weight_decay = 1e-4 # L2 regularization, This extra term penalizes large weights.
         momentum = 0.9 # used when optimizer == "sgd"
-        loss = "mse"  # e.g. "mse", "smooth_l1", "l1"
+        loss = "mse"  # e.g. "mse", "smooth_l1", "l1", "crossentropy"
         loss_beta = 1.0 # used for SmoothL1Loss
 
         early_stopping = True

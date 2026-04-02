@@ -18,17 +18,20 @@ class HW1Q1cfg(BaseConfig):
     class training(BaseConfig.training):
         encoder_hidden_dims = [256, 128]
         decoder_hidden_dims = [128, 256]
+        classifier_hidden_dims = [4]
+        classifier_num_outputs = 10
         latent_size = 32
-        epochs = 30
-        batch_size = 256
+        epochs = 2
+        autoencoder_batch_size = 256
+        classifier_batch_size = 512
         learning_rate = 1e-3
 
         activation = 'relu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid 
         optimizer = "adam" # e.g. "adam", "sgd"
         weight_decay = 1e-5 # L2 regularization, This extra term penalizes large weights.
-        momentum = 0.9 # used when optimizer == "sgd"
-        loss = "mse"  # e.g. "mse", "smooth_l1", "l1"
-        loss_beta = 1.0 # used for SmoothL1Loss
+        autoencoder_loss = "mse"  # e.g. "mse", "smooth_l1", "l1", "adamw", "crossentropy"
+        classifier_loss = "crossentropy"  # e.g. "mse", "smooth_l1", "l1", "adamw", "crossentropy"
+
 
         early_stopping = True
         patience = 10
@@ -40,6 +43,7 @@ class HW1Q1cfg(BaseConfig):
 
     class evaluation(BaseConfig.evaluation):
         load_run = -1
+        load_autoencoder = "/home/mehtimans/deep_learning_course/logs/Autoencoder/2026-04-01_01-37-32_/JIT_model.pt"
 
     class logger(BaseConfig.logger):
         train_label = 'Autoencoder'
@@ -63,7 +67,7 @@ class HW1Q2cfg(BaseConfig):
         optimizer = "adam" # e.g. "adam", "sgd"
         weight_decay = 1e-4 # L2 regularization, This extra term penalizes large weights.
         momentum = 0.9 # used when optimizer == "sgd"
-        loss = "mse"  # e.g. "mse", "smooth_l1", "l1"
+        loss = "mse"  # e.g. "mse", "smooth_l1", "l1", "crossentropy"
         loss_beta = 1.0 # used for SmoothL1Loss
 
         early_stopping = True

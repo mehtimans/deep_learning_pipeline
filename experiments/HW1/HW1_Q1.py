@@ -39,6 +39,32 @@ class SelfSupervisedDataset(Dataset):
     def __len__(self):
         return len(self.base_ds)
 
+class LatentDataset(Dataset):
+    def __init__(self, z, y):
+        self.z = z
+        self.y = y
+
+    def __getitem__(self, idx):
+        return self.z[idx], self.y[idx]
+
+    def __len__(self):
+        return len(self.z)
+    
+def build_latent_dataset(model, dataloader, device):
+    model.eval()
+    zs = []
+    ys = []
+
+    with torch.no_grad():
+        for xb, yb in dataloader:
+            xb = xb.to(device)
+            z = model.encode(xb)
+            zs.append(z.cpu())
+            ys.append(yb.cpu())
+
+    zs = torch.cat(zs, dim=0)
+    ys = torch.cat(ys, dim=0)
+    return LatentDataset(zs, ys)
 
 def load_dataset(root_path: str)-> Tuple[Dataset, Dataset]:
     """
@@ -100,53 +126,93 @@ if __name__ == "__main__":
     # x, y = next(iter(train_dl))
     # print(x.size())
 
-    ## Training Autoencoder Networks 
-    Autoenc_train_ds = SelfSupervisedDataset(train_ds)
-    Autoenc_val_ds = SelfSupervisedDataset(val_ds)
-    x0, _ = Autoenc_train_ds[0]
+    if cfg.evaluation.load_autoencoder == -1:
+        ## Training Autoencoder Networks 
+        Autoenc_train_ds = SelfSupervisedDataset(train_ds)
+        Autoenc_val_ds = SelfSupervisedDataset(val_ds)
+        x0, _ = Autoenc_train_ds[0]
 
-    Autoenc_train_dl, Autoenc_val_dl = get_dataloader(Autoenc_train_ds, Autoenc_val_ds, cfg.training.batch_size)
+        Autoenc_train_dl, Autoenc_val_dl = get_dataloader(Autoenc_train_ds, Autoenc_val_ds, cfg.training.autoencoder_batch_size)
+        
+        autoencoder_model = AutoEncoderNetwork(
+            num_inputs=x0.numel(),
+            latent_dim=cfg.training.latent_size,
+            encoder_hidden_dims=cfg.training.encoder_hidden_dims,
+            decoder_hidden_dims=cfg.training.decoder_hidden_dims,
+            activation=cfg.training.activation
+        ).to(cfg.device)
+
+        # loss function 
+        autoencoder_loss_fn = get_loss(cfg.training.autoencoder_loss, reduction="mean")
+
+        # Optimizer 
+        autoencoder_optimizer = get_optimizer(cfg.training.optimizer, autoencoder_model.parameters(), 
+                                lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
     
-    autoencoder_model = AutoEncoderNetwork(
-        num_inputs=x0.numel(),
-        latent_dim=cfg.training.latent_size,
-        encoder_hidden_dims=cfg.training.encoder_hidden_dims,
-        decoder_hidden_dims=cfg.training.decoder_hidden_dims,
-        activation=cfg.training.activation
-    ).to(cfg.device)
+        # Train the model 
+        trainer = Trainer(
+            autoencoder_model,
+            Autoenc_train_dl,
+            Autoenc_val_dl,
+            autoencoder_optimizer,
+            autoencoder_loss_fn,
+            epochs=cfg.training.epochs,
+            device=cfg.device,
+            noise_std=cfg.training.noise.noise_std,
+            noise_frac=cfg.training.noise.noise_frac,
+            early_stopping=cfg.training.early_stopping,
+            patience=cfg.training.patience,
+            log_dir=cfg.logger.log_dir 
+        )
 
+        print("Starting autoencoder training...")
+        best_autoencoder_model = trainer.train() # Note: best_autoencoder_model is stored on CPU for portability
+
+        # save model as a jit file
+        model_path = save_model_jit(best_autoencoder_model, cfg.logger.log_dir)
+
+        # save config
+        config_path = os.path.join(cfg.logger.log_dir, "autoencoder_config.json")
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump(cfg_dict, f, indent=4)
+        
+        print(f"config saved to {config_path}")
+
+    else:
+        try: 
+            best_autoencoder_model = torch.jit.load(cfg.evaluation.load_autoencoder)
+        
+        except Exception as e:
+            raise ValueError(f"Invalid autoencoder path: {cfg.evaluation.load_autoencoder}") from e
+
+
+    best_autoencoder_model = best_autoencoder_model.to(cfg.device)
+    
+    # freeze autoencoder parameters
+    for param in best_autoencoder_model.parameters():
+        param.requires_grad = False
+
+
+    ## Training Classifier network
+    # build Classifier Dataset 
+    train_class_ds = build_latent_dataset(best_autoencoder_model, train_dl, cfg.device)
+    val_class_ds = build_latent_dataset(best_autoencoder_model, val_dl, cfg.device)
+    x1, _ = train_class_ds[0]
+
+    train_class_dl, val_class_dl = get_dataloader(train_class_ds, val_class_ds, cfg.training.classifier_batch_size)
+    
+    # load model
+    classifier_mlp_model = MLPNetwork(
+                    num_inputs=x1.numel(), 
+                    num_outputs=cfg.training.classifier_num_outputs,
+                    network_hidden_dims = cfg.training.classifier_hidden_dims,
+                    activation = cfg.training.activation)
+    
     # loss function 
-    loss_fn = get_loss(cfg.training.loss, reduction="mean")
+    classifier_loss_fn = get_loss(cfg.training.classifier_loss, reduction="mean")
 
     # Optimizer 
-    optimizer = get_optimizer(cfg.training.optimizer, autoencoder_model.parameters(), 
-                              lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
- 
-    # Train the model 
-    trainer = Trainer(
-        autoencoder_model,
-        Autoenc_train_dl,
-        Autoenc_val_dl,
-        optimizer,
-        loss_fn,
-        epochs=cfg.training.epochs,
-        device=cfg.device,
-        noise_std=cfg.training.noise.noise_std,
-        noise_frac=cfg.training.noise.noise_frac,
-        early_stopping=cfg.training.early_stopping,
-        patience=cfg.training.patience,
-        log_dir=cfg.logger.log_dir 
-    )
+    classifier_optimizer = get_optimizer(cfg.training.optimizer, classifier_mlp_model.parameters(), 
+                            lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
 
-    print("Starting autoencoder training...")
-    best_autoencoder_model = trainer.train() # Note: best_autoencoder_model is stored on CPU for portability
 
-    # save model as a jit file
-    model_path = save_model_jit(best_autoencoder_model, cfg.logger.log_dir)
-
-    # save config
-    config_path = os.path.join(cfg.logger.log_dir, "autoencoder_config.json")
-    with open(config_path, "w", encoding="utf-8") as f:
-        json.dump(cfg_dict, f, indent=4)
-    
-    print(f"config saved to {config_path}")

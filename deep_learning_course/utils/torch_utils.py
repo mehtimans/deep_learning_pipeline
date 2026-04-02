@@ -37,6 +37,7 @@ def get_loss(name: str, **kwargs) -> nn.Module:
     if name == "mse": return nn.MSELoss(**kwargs)
     if name == "smooth_l1": return nn.SmoothL1Loss(**kwargs)
     if name == "l1": return nn.L1Loss(**kwargs)
+    if name == "crossentropy": return nn.CrossEntropyLoss(**kwargs)
     raise ValueError(f"Unknown loss '{name}'")
 
 def get_optimizer(name: str, params, lr: float, **kwargs) -> torch.optim.Optimizer:
