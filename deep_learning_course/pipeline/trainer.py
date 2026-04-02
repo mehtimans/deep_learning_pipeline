@@ -18,6 +18,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
+from deep_learning_course.utils import METRIC_REGISTRY
+
 class Trainer:
     def __init__(
         self,
@@ -27,10 +29,14 @@ class Trainer:
         optimizer,
         loss_fn,
         *,
+        trainer_name: str = "run",
         epochs: int = 50,
         device: str = "cuda" if torch.cuda.is_available() else "cpu",
         noise_std: float = 0.0,
         noise_frac: float = 0.0,
+        metrics: list = None, 
+        monitor: str = "rmse",
+        mode: str = "min",
         early_stopping: bool = True,
         patience: int = 100,
         log_dir: str  = "./logs",
@@ -42,22 +48,42 @@ class Trainer:
         self.optimizer = optimizer
         self.loss_fn = loss_fn
 
+        self.trainer_name = trainer_name
         self.epochs = epochs
         self.device = device
 
         self.noise_std = noise_std
         self.noise_frac = noise_frac
+        
+        metrics = metrics or []
+        self.metrics = []
+        for m in metrics:
+            if isinstance(m, str):
+                if m not in METRIC_REGISTRY:
+                    raise ValueError(f"unknown metric: {m}")
+                self.metrics.append(METRIC_REGISTRY[m])
+            else:
+                raise ValueError(f"metric must be a string, got {type(m).__name__}")
+        metric_names = [m.__name__ for m in self.metrics]
+
+        self.monitor = monitor
+        self.mode = mode.lower()
+        if self.monitor not in metric_names:
+            raise ValueError(f"monitor '{self.monitor}' not found in metrics {metric_names}")
 
         self.n_train = len(train_dl.dataset)
         self.n_val = len(val_dl.dataset)
 
-        _, yb = next(iter(train_dl))
-        self.D = yb[0].numel()
 
         # store the best model observed during training
         self.best_model = copy.deepcopy(self.model).cpu() 
-        self.best_val_rmse = float("inf")
-        
+        if self.mode == "min":
+            self.best_score = float("inf")
+        elif self.mode == "max":
+            self.best_score = float("-inf")
+        else: 
+            raise ValueError (f"mode must be max or min, got {self.mode}")
+
         # early stopping parameters
         self.early_stopping = early_stopping
         self.patience = patience
@@ -68,11 +94,12 @@ class Trainer:
         # History tracking
         self.history = {
             "epoch": [],
-            "train_loss": [], "val_loss": [],
-            "train_rmse": [], "val_rmse": [],
-            "train_mse": [], "val_mse": [],
-            "train_r2":   [], "val_r2":   []
+            "train_loss": [], "val_loss": []
         }
+        for m in self.metrics:
+            name = m.__name__
+            self.history[f"train_{name}"] = []
+            self.history[f"val_{name}"] = []
 
         self.enable_plots = enable_plots
 
@@ -87,39 +114,54 @@ class Trainer:
 
         print(f"Starting training on {self.device}...")
         for epoch in range (1, self.epochs + 1):
-            train_loss, train_mse, train_rmse, train_r2 = self.train_epoch()
-            val_loss, val_mse, val_rmse, val_r2= self.validate_epoch()
+            train_loss, train_metrics = self.train_epoch()
+            val_loss, val_metrics = self.validate_epoch()
 
             # add logs
             self.history["epoch"].append(epoch)
-            self.history["train_loss"].append(train_loss), self.history["val_loss"].append(val_loss)
-            self.history["train_rmse"].append(train_rmse), self.history["val_rmse"].append(val_rmse)
-            self.history["train_mse"].append(train_mse), self.history["val_mse"].append(val_mse)
-            self.history["train_r2"].append(train_r2), self.history["val_r2"].append(val_r2)
+            self.history["train_loss"].append(train_loss)
+            self.history["val_loss"].append(val_loss)
+            
+            for name, value in train_metrics.items():
+                self.history[f"train_{name}"].append(value.item()) 
+            for name, value in val_metrics.items():
+                self.history[f"val_{name}"].append(value.item())
 
-            # save best model
-            if val_rmse < self.best_val_rmse:
-                self.best_val_rmse = val_rmse 
+            
+            monitor_value = val_metrics[self.monitor]
+            monitor_value = monitor_value.item() if torch.is_tensor(monitor_value) else monitor_value
+            
+            improved = (
+                (self.mode == "min" and monitor_value < self.best_score) or
+                (self.mode == "max" and monitor_value > self.best_score)
+            )
+            
+            # dynamic metric printing
+            train_str = " | ".join(
+                f"{key}: {(value.item() if torch.is_tensor(value) else value):.4f}"
+                for key, value in train_metrics.items()
+            )
+            
+            val_str = " | ".join(
+                f"{key}: {(value.item() if torch.is_tensor(value) else value):.4f}"
+                for key, value in val_metrics.items()
+            )
+            
+            if improved:
+                self.best_score = monitor_value
                 self.best_model = copy.deepcopy(self.model).to("cpu")
-                print(
-                    f"Epoch {epoch:03d} | "
-                    f"Train RMSE: {train_rmse:.4f} | Val RMSE: {val_rmse:.4f} | "
-                    f"Train R2: {train_r2:.4f} | Val R2: {val_r2:.4f} | Best Model Saved "
-                )
                 self.patience_counter = 0
+                print(f"Epoch {epoch:03d} | Train [{train_str}] | Val [{val_str}] | Best Model Saved")
             else:
-                print(
-                    f"Epoch {epoch:03d} | "
-                    f"Train RMSE: {train_rmse:.4f} | Val RMSE: {val_rmse:.4f} | "
-                    f"Train R2: {train_r2:.4f} | Val R2: {val_r2:.4f}"
-                )
                 self.patience_counter += 1
+                print(f"Epoch {epoch:03d} | Train [{train_str}] | Val [{val_str}]")
+            
             
             if self.early_stopping and self.patience_counter >= self.patience:
                 print("Early stopping triggered")
                 break
 
-        print(f"\nBest Validation RMSE: {self.best_val_rmse:.4f}")
+        print(f"\nBest Validation {self.monitor}: {self.best_score:.4f}")
         self.save_log(self.history)
         self.plotter(self.history)
         
@@ -134,9 +176,9 @@ class Trainer:
         """
         self.model.train()
         total_loss = 0.0
-        ss_res = 0.0
-        sum_y = 0.0
-        sum_y2 = 0.0
+        preds_all = []
+        targets_all = []
+
 
         for xb, yb in self.train_dl:
             xb, yb = xb.to(self.device), yb.to(self.device)
@@ -164,19 +206,19 @@ class Trainer:
             self.optimizer.step()
 
             total_loss += loss.item() * xb.size(0)
-            ss_res += torch.sum((yb - pred) ** 2).item()
-            sum_y += torch.sum(yb).item()
-            sum_y2 += torch.sum(yb ** 2).item()
+            preds_all.append(pred.detach())
+            targets_all.append(yb.detach())
 
         train_loss = total_loss / self.n_train
 
-        train_mse = ss_res / (self.n_train * self.D)
-        train_rmse = train_mse ** 0.5
+        preds = torch.cat(preds_all)
+        targets = torch.cat(targets_all)
 
-        ss_tot = sum_y2 - (sum_y ** 2) / (self.n_train * self.D)
-        train_r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
+        metric_results = {}
+        for metric in self.metrics:
+            metric_results[metric.__name__] = metric(preds, targets)
 
-        return train_loss, train_mse, train_rmse, train_r2
+        return train_loss, metric_results
 
 
     @torch.no_grad()
@@ -186,9 +228,8 @@ class Trainer:
         """
         self.model.eval()
         total_loss = 0.0
-        ss_res = 0.0
-        sum_y = 0.0
-        sum_y2 = 0.0
+        preds_all = []
+        targets_all = []
 
         for xb, yb in self.val_dl:
             xb, yb = xb.to(self.device), yb.to(self.device)
@@ -197,19 +238,20 @@ class Trainer:
             loss = self.loss_fn(pred, yb)
             
             total_loss += loss.item() * xb.size(0)
-            ss_res += torch.sum((yb - pred) ** 2).item()
-            sum_y += torch.sum(yb).item()
-            sum_y2 += torch.sum(yb ** 2).item()
+            preds_all.append(pred.detach())
+            targets_all.append(yb.detach())
 
         val_loss = total_loss / self.n_val
+                
+        preds = torch.cat(preds_all)
+        targets = torch.cat(targets_all)
+
+        metric_results = {}
+        for metric in self.metrics:
+            metric_results[metric.__name__] = metric(preds, targets)
         
-        val_mse = ss_res / (self.n_val * self.D)
-        val_rmse = val_mse ** 0.5
+        return val_loss, metric_results
 
-        ss_tot = sum_y2 - (sum_y ** 2) / (self.n_val * self.D)
-        val_r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
-
-        return val_loss, val_mse, val_rmse, val_r2
 
     def save_log(self, dict_history: dict, log_dir=None):
         """
@@ -221,7 +263,7 @@ class Trainer:
 
         df = pd.DataFrame(dict_history)
 
-        out_path = os.path.join(out_dir, "training_log.csv")
+        out_path = os.path.join(out_dir, f"{self.trainer_name}_training_log.csv")
         tmp_path = out_path + ".tmp"
 
         try:
@@ -249,12 +291,12 @@ class Trainer:
 
             plt.xlabel(x_label)
             plt.ylabel(column)
-            # plt.title(f"{column} over f{x_label}")
+            # plt.title(f"{column} over {x_label}")
 
             plt.grid(True)
             plt.tight_layout()
 
-            fig_path = os.path.join(out_dir, f"{column}.png")
+            fig_path = os.path.join(out_dir, f"{self.trainer_name}_{column}.png")
             plt.savefig(fig_path)
             # print(f"Saved: {fig_path}")
 
