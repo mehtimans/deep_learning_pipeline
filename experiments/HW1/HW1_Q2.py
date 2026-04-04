@@ -120,19 +120,23 @@ if __name__ == "__main__":
         val_dl,
         optimizer,
         loss_fn,
+        trainer_name=cfg.training.trainer.trainer_name,
         epochs=cfg.training.epochs,
         device=cfg.device,
-        noise_std=cfg.training.noise.noise_std,
-        noise_frac=cfg.training.noise.noise_frac,
-        early_stopping=cfg.training.early_stopping,
-        patience=cfg.training.patience,
+        noise_std=cfg.training.trainer.noise.noise_std,
+        noise_frac=cfg.training.trainer.noise.noise_frac,
+        metrics=cfg.training.trainer.metrics,
+        monitor=cfg.training.trainer.monitor,
+        mode=cfg.training.trainer.mode,
+        early_stopping=cfg.training.trainer.early_stopping,
+        patience=cfg.training.trainer.patience,
         log_dir=cfg.logger.log_dir 
     )
 
     best_model = trainer.train() # Note: best_model is stored on CPU for portability
 
     # save model as a jit file
-    model_path = save_model_jit(best_model, cfg.logger.log_dir)
+    model_path = save_model_jit(best_model, cfg.logger.log_dir, cfg.logger.save_model_label)
 
     # save config
     config_path = os.path.join(cfg.logger.log_dir, "config.json")

@@ -96,22 +96,22 @@ def update_cfg_from_args(args, cfg):
         cfg.training.hidden_dims = args.hidden_dims
 
     if args.add_noise is not None:
-        cfg.training.add_noise = args.add_noise
+        cfg.training.trainer.add_noise = args.add_noise
 
     # noise config
     if args.noise_std is not None:
-        cfg.training.noise.noise_std = args.noise_std
+        cfg.training.trainer.noise.noise_std = args.noise_std
 
     if args.noise_frac is not None:
-        cfg.training.noise.noise_frac = args.noise_frac
+        cfg.training.trainer.noise.noise_frac = args.noise_frac
 
     # evaluation
     if args.val_split is not None:
         cfg.evaluation.val_split = args.val_split
     
     # enforce rule
-    if not cfg.training.add_noise:
-        cfg.training.noise.noise_std = 0.0
-        cfg.training.noise.noise_frac = 0.0
+    if not cfg.training.trainer.add_noise:
+        cfg.training.trainer.noise.noise_std = 0.0
+        cfg.training.trainer.noise.noise_frac = 0.0
 
     return cfg

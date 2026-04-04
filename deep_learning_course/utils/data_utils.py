@@ -91,7 +91,7 @@ def compute_normalization_stats(train_ds: Dataset) -> Tuple[Tensor, Tensor]:
 
     return mean, std
 
-def save_model_jit(model, log_dir: str)->str:
+def save_model_jit(model, log_dir: str, label:str ="JIT_model")->str:
     """
     Save a PyTorch model as a TorchScript (JIT) file.
     
@@ -100,7 +100,7 @@ def save_model_jit(model, log_dir: str)->str:
     os.makedirs(log_dir, exist_ok=True)
 
     model = copy.deepcopy(model).to("cpu").eval()
-    model_path = os.path.join(log_dir, 'JIT_model.pt')
+    model_path = os.path.join(log_dir, f"{label}.pt")
     
     # save as jit
     try:

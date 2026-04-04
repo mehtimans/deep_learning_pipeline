@@ -13,33 +13,44 @@ or research purposes.
 from deep_learning_course.configs import BaseConfig
 
 class HW1Q1cfg(BaseConfig):
-    seed = 42
+    seed = 42 # Random seed for reproducibility
     device = 'cuda'
     class training(BaseConfig.training):
-        encoder_hidden_dims = [256, 128]
-        decoder_hidden_dims = [128, 256]
-        classifier_hidden_dims = [4]
+        encoder_hidden_dims = [256, 128] # Dimensions of encoder hidden layers
+        decoder_hidden_dims = [128, 256] # Dimensions of decoder hidden layers
+        classifier_hidden_dims = [8] # Dimensions of classifier hidden layers
         classifier_num_outputs = 10
         latent_size = 32
-        epochs = 2
-        autoencoder_batch_size = 256
-        classifier_batch_size = 512
+        epochs = 300
+        autoencoder_batch_size = 256 # autoencoder Mini-batch size for training
+        classifier_batch_size = 512 # classifier Mini-batch size for training
         learning_rate = 1e-3
 
-        activation = 'relu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid 
-        optimizer = "adam" # e.g. "adam", "sgd"
+        activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
+        optimizer = "adam" # Optimizer algorithm: "adam", "sgd","adamw"
         weight_decay = 1e-5 # L2 regularization, This extra term penalizes large weights.
         autoencoder_loss = "mse"  # e.g. "mse", "smooth_l1", "l1", "adamw", "crossentropy"
         classifier_loss = "crossentropy"  # e.g. "mse", "smooth_l1", "l1", "adamw", "crossentropy"
 
-
-        early_stopping = True
-        patience = 10
-        
-        add_noise = True
-        class noise(BaseConfig.training.noise):
-            noise_std = 0.01
-            noise_frac = 0.02
+        class trainer(BaseConfig.training.trainer):
+            autoencoder_trainer_name = "Autoencoder" # Identifier for this specific trainer run
+            classifier_trainer_name = "Classifier" # Identifier for this specific trainer run
+            autoencoder_metrics = ["mse", "rmse", "r2"] # Metrics to compute and track during training: "mse", "rmse", "r2", "accuracy"
+            autoencoder_monitor = "rmse"  # Metric to monitor for early stopping and best model
+            autoencoder_mode = "min" # Whether to minimize ('min') or maximize ('max') the monitored metric
+            classifier_metrics = ["accuracy"] # Metrics to compute and track during training: "mse", "rmse", "r2", "accuracy"
+            classifier_monitor = "accuracy"  # Metric to monitor for early stopping and best model
+            classifier_mode = "max" # Whether to minimize ('min') or maximize ('max') the monitored metric
+            enable_plots = True # save plots of metrics
+            early_stopping = True
+            patience = 100 # Number of epochs with no improvement before stopping
+            
+            add_noise = True # Noise injection for training data
+            class noise(BaseConfig.training.trainer.noise):
+                autoencoder_noise_std = 0.005 # Standard deviation of the Gaussian noise to add
+                autoencoder_noise_frac = 0.02 # Fraction of samples that will receive noise perturbation
+                classifier_noise_std = 0.0 # Standard deviation of the Gaussian noise to add
+                classifier_noise_frac = 0.0 # Fraction of samples that will receive noise perturbation
 
     class evaluation(BaseConfig.evaluation):
         load_run = -1
@@ -47,44 +58,51 @@ class HW1Q1cfg(BaseConfig):
 
     class logger(BaseConfig.logger):
         train_label = 'Autoencoder'
+        autoencoder_save_model_label = "Autoencoder_JIT_model"
+        classifier_save_model_label = "Classifier_JIT_model"
         log_dir = -1 
 
-        experiment = "HW1_Q1"
-        dataset = "MNIST"
+        experiment = "HW1_Q1" # Name of the overall experiment
+        dataset = "MNIST" # Name of the dataset being used
        
 
 
 class HW1Q2cfg(BaseConfig):
-    seed = 42
+    seed = 42 # Random seed for reproducibility
     device = 'cuda'
     class training(BaseConfig.training):
-        hidden_dims = [64, 32]
+        hidden_dims = [64, 32] # Dimensions of hidden layers
         epochs = 3000
-        batch_size = 64
+        batch_size = 128 # Mini-batch size for training
         learning_rate = 1e-4
 
-        activation = 'relu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid 
-        optimizer = "adam" # e.g. "adam", "sgd"
+        activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
+        optimizer = "adam" # Optimizer algorithm: "adam", "sgd","adamw"
         weight_decay = 1e-4 # L2 regularization, This extra term penalizes large weights.
-        momentum = 0.9 # used when optimizer == "sgd"
-        loss = "mse"  # e.g. "mse", "smooth_l1", "l1", "crossentropy"
-        loss_beta = 1.0 # used for SmoothL1Loss
-
-        early_stopping = True
-        patience = 100
+        loss = "mse"  # Loss function to minimize: "mse", "smooth_l1", "l1", "crossentropy"
         
-        add_noise = True
-        class noise(BaseConfig.training.noise):
-            noise_std = 0.005
-            noise_frac = 0.02
+        class trainer(BaseConfig.training.trainer):
+            trainer_name = "MLP" # Identifier for this specific trainer run
+            metrics = ["mse", "rmse", "r2"] # Metrics to compute and track during training: "mse", "rmse", "r2", "accuracy"
+            monitor = "rmse"  # Metric to monitor for early stopping and best model
+            mode = "min" # Whether to minimize ('min') or maximize ('max') the monitored metric
+            enable_plots = True # save plots of metrics
+            early_stopping = True
+            patience = 100 # Number of epochs with no improvement before stopping
+            
+            add_noise = True # Noise injection for training data
+            class noise(BaseConfig.training.trainer.noise):
+                noise_std = 0.005 # Standard deviation of the Gaussian noise to add
+                noise_frac = 0.02 # Fraction of samples that will receive noise perturbation
 
     class evaluation(BaseConfig.evaluation):
-        val_split = 0.2
+        val_split = 0.2 # Proportion of training data to use for validation
         load_run = -1
 
     class logger(BaseConfig.logger):
         train_label = 'MLP'
-        log_dir = -1 
+        save_model_label = "MLP_JIT_model"
+        log_dir = -1 # Directory to save logs (-1 means use default location)
 
-        experiment = "HW1_Q2"
-        dataset = "Life_Expectancy_Data"
+        experiment = "HW1_Q2" # Name of the overall experiment
+        dataset = "Life_Expectancy_Data" # Name of the dataset being used

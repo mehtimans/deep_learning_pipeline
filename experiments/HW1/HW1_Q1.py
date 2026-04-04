@@ -150,33 +150,31 @@ if __name__ == "__main__":
                                 lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
     
         # Train the model 
-        trainer = Trainer(
+        autoencoder_trainer = Trainer(
             autoencoder_model,
             Autoenc_train_dl,
             Autoenc_val_dl,
             autoencoder_optimizer,
             autoencoder_loss_fn,
+            trainer_name=cfg.training.trainer.autoencoder_trainer_name,
             epochs=cfg.training.epochs,
             device=cfg.device,
-            noise_std=cfg.training.noise.noise_std,
-            noise_frac=cfg.training.noise.noise_frac,
-            early_stopping=cfg.training.early_stopping,
-            patience=cfg.training.patience,
+            noise_std=cfg.training.trainer.noise.autoencoder_noise_std,
+            noise_frac=cfg.training.trainer.noise.autoencoder_noise_frac,
+            metrics=cfg.training.trainer.autoencoder_metrics,
+            monitor=cfg.training.trainer.autoencoder_monitor,
+            mode=cfg.training.trainer.autoencoder_mode,
+            early_stopping=cfg.training.trainer.early_stopping,
+            patience=cfg.training.trainer.patience,
             log_dir=cfg.logger.log_dir 
         )
 
         print("Starting autoencoder training...")
-        best_autoencoder_model = trainer.train() # Note: best_autoencoder_model is stored on CPU for portability
+        best_autoencoder_model = autoencoder_trainer.train() # Note: best_autoencoder_model is stored on CPU for portability
 
         # save model as a jit file
-        model_path = save_model_jit(best_autoencoder_model, cfg.logger.log_dir)
+        autoencoder_model_path = save_model_jit(best_autoencoder_model, cfg.logger.log_dir, cfg.logger.autoencoder_save_model_label)
 
-        # save config
-        config_path = os.path.join(cfg.logger.log_dir, "autoencoder_config.json")
-        with open(config_path, "w", encoding="utf-8") as f:
-            json.dump(cfg_dict, f, indent=4)
-        
-        print(f"config saved to {config_path}")
 
     else:
         try: 
@@ -215,4 +213,35 @@ if __name__ == "__main__":
     classifier_optimizer = get_optimizer(cfg.training.optimizer, classifier_mlp_model.parameters(), 
                             lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
 
+    # Train the model 
+    classifier_trainer = Trainer(
+        classifier_mlp_model,
+        train_class_dl,
+        val_class_dl,
+        classifier_optimizer,
+        classifier_loss_fn,
+        trainer_name=cfg.training.trainer.classifier_trainer_name,
+        epochs=cfg.training.epochs,
+        device=cfg.device,
+        noise_std=cfg.training.trainer.noise.classifier_noise_std,
+        noise_frac=cfg.training.trainer.noise.classifier_noise_frac,
+        metrics=cfg.training.trainer.classifier_metrics,
+        monitor=cfg.training.trainer.classifier_monitor,
+        mode=cfg.training.trainer.classifier_mode,
+        early_stopping=cfg.training.trainer.early_stopping,
+        patience=cfg.training.trainer.patience,
+        log_dir=cfg.logger.log_dir 
+    )
 
+    print("Starting classifier training...")
+    best_classifier_model = classifier_trainer.train() # Note: best_classifier_model is stored on CPU for portability
+
+    # save model as a jit file
+    classifier_model_path = save_model_jit(best_classifier_model, cfg.logger.log_dir, cfg.logger.classifier_save_model_label)
+
+    # save config
+    config_path = os.path.join(cfg.logger.log_dir, "autoencoder_config.json")
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(cfg_dict, f, indent=4)
+    
+    print(f"config saved to {config_path}")

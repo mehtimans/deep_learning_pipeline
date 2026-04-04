@@ -11,7 +11,7 @@ or research purposes.
 """
 
 from torch import Tensor
-from typing import Callable
+from typing import Callable , Dict
 
 def mse(preds: Tensor, targets: Tensor) -> Tensor:
     """
@@ -46,7 +46,7 @@ def accuracy(preds: Tensor, targets: Tensor) -> Tensor:
     preds_ = preds.argmax(dim=1)
     return (preds_ == targets).float().mean()
 
-METRIC_REGISTRY: dict[str, callable] = {
+METRIC_REGISTRY: Dict[str, Callable] = {
     "mse": mse,
     "rmse": rmse,
     "r2": r2,
