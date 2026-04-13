@@ -23,7 +23,7 @@ from torch.utils.data import Dataset
 from deep_learning_course.models import MLPNetwork, AutoEncoderNetwork 
 from deep_learning_course.configs import HW1Q1cfg
 from deep_learning_course.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
-from deep_learning_course.utils import get_dataloader, get_log_dir, save_model_jit
+from deep_learning_course.utils import get_dataloader, get_log_dir, save_model_jit, count_trainable_params
 from deep_learning_course.utils import get_loss, get_optimizer
 from deep_learning_course.pipeline import Trainer
 from deep_learning_course import DEEP_LEARNING_COURSE_RESOURCES_DIR, DEEP_LEARNING_COURSE_ROOT_DIR
@@ -142,12 +142,24 @@ if __name__ == "__main__":
             activation=cfg.training.activation
         ).to(cfg.device)
 
+        autoencoder_num_params = count_trainable_params(autoencoder_model)
+        print(f"Autoencoder has {autoencoder_num_params:,} trainable parameters")
+        
         # loss function 
         autoencoder_loss_fn = get_loss(cfg.training.autoencoder_loss, reduction="mean")
 
         # Optimizer 
         autoencoder_optimizer = get_optimizer(cfg.training.optimizer, autoencoder_model.parameters(), 
                                 lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
+        
+        # Scheduler
+        autoencoder_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            autoencoder_optimizer,
+            mode="min",          # because you monitor RMSE
+            factor=0.5,          # LR *= factor when plateau
+            patience=10,         # epochs with no improvement before reducing LR
+            min_lr=1e-4,
+        )
     
         # Train the model 
         autoencoder_trainer = Trainer(
@@ -158,6 +170,7 @@ if __name__ == "__main__":
             autoencoder_loss_fn,
             trainer_name=cfg.training.trainer.autoencoder_trainer_name,
             epochs=cfg.training.epochs,
+            # scheduler=autoencoder_scheduler, 
             device=cfg.device,
             noise_std=cfg.training.trainer.noise.autoencoder_noise_std,
             noise_frac=cfg.training.trainer.noise.autoencoder_noise_frac,
@@ -165,7 +178,7 @@ if __name__ == "__main__":
             monitor=cfg.training.trainer.autoencoder_monitor,
             mode=cfg.training.trainer.autoencoder_mode,
             early_stopping=cfg.training.trainer.early_stopping,
-            patience=cfg.training.trainer.patience,
+            patience=cfg.training.trainer.autoencoder_patience,
             log_dir=cfg.logger.log_dir 
         )
 
@@ -206,6 +219,9 @@ if __name__ == "__main__":
                     network_hidden_dims = cfg.training.classifier_hidden_dims,
                     activation = cfg.training.activation)
     
+    classifier_num_params = count_trainable_params(classifier_mlp_model)
+    print(f"Classifier has {classifier_num_params:,} trainable parameters")
+    
     # loss function 
     classifier_loss_fn = get_loss(cfg.training.classifier_loss, reduction="mean")
 
@@ -229,7 +245,7 @@ if __name__ == "__main__":
         monitor=cfg.training.trainer.classifier_monitor,
         mode=cfg.training.trainer.classifier_mode,
         early_stopping=cfg.training.trainer.early_stopping,
-        patience=cfg.training.trainer.patience,
+        patience=cfg.training.trainer.classifier_patience,
         log_dir=cfg.logger.log_dir 
     )
 
@@ -240,6 +256,10 @@ if __name__ == "__main__":
     classifier_model_path = save_model_jit(best_classifier_model, cfg.logger.log_dir, cfg.logger.classifier_save_model_label)
 
     # save config
+    cfg_dict["parameter_counts"] = {
+        "autoencoder": autoencoder_num_params,
+        "classifier": classifier_num_params
+    }
     config_path = os.path.join(cfg.logger.log_dir, "autoencoder_config.json")
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(cfg_dict, f, indent=4)

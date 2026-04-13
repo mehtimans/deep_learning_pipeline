@@ -16,9 +16,9 @@ class HW1Q1cfg(BaseConfig):
     seed = 42 # Random seed for reproducibility
     device = 'cuda'
     class training(BaseConfig.training):
-        encoder_hidden_dims = [256, 128] # Dimensions of encoder hidden layers
-        decoder_hidden_dims = [128, 256] # Dimensions of decoder hidden layers
-        classifier_hidden_dims = [8] # Dimensions of classifier hidden layers
+        encoder_hidden_dims = [128] # Dimensions of encoder hidden layers
+        decoder_hidden_dims = [128] # Dimensions of decoder hidden layers
+        classifier_hidden_dims = [16] # Dimensions of classifier hidden layers
         classifier_num_outputs = 10
         latent_size = 32
         epochs = 300
@@ -43,8 +43,9 @@ class HW1Q1cfg(BaseConfig):
             classifier_mode = "max" # Whether to minimize ('min') or maximize ('max') the monitored metric
             enable_plots = True # save plots of metrics
             early_stopping = True
-            patience = 100 # Number of epochs with no improvement before stopping
-            
+            autoencoder_patience = 5 # Number of epochs with no improvement before stopping
+            classifier_patience = 25 # Number of epochs with no improvement before stopping
+
             add_noise = True # Noise injection for training data
             class noise(BaseConfig.training.trainer.noise):
                 autoencoder_noise_std = 0.005 # Standard deviation of the Gaussian noise to add
@@ -54,7 +55,7 @@ class HW1Q1cfg(BaseConfig):
 
     class evaluation(BaseConfig.evaluation):
         load_run = -1
-        load_autoencoder = "/home/mehtimans/deep_learning_course/logs/Autoencoder/2026-04-01_01-37-32_/JIT_model.pt"
+        load_autoencoder = -1 # "/home/mehtimans/deep_learning_course/logs/Autoencoder/2026-04-01_01-37-32_/JIT_model.pt"
 
     class logger(BaseConfig.logger):
         train_label = 'Autoencoder'
@@ -71,10 +72,10 @@ class HW1Q2cfg(BaseConfig):
     seed = 42 # Random seed for reproducibility
     device = 'cuda'
     class training(BaseConfig.training):
-        hidden_dims = [64, 32] # Dimensions of hidden layers
+        hidden_dims = [16, 32] # Dimensions of hidden layers
         epochs = 3000
         batch_size = 128 # Mini-batch size for training
-        learning_rate = 1e-4
+        learning_rate = 1e-3
 
         activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
         optimizer = "adam" # Optimizer algorithm: "adam", "sgd","adamw"
@@ -87,7 +88,7 @@ class HW1Q2cfg(BaseConfig):
             monitor = "rmse"  # Metric to monitor for early stopping and best model
             mode = "min" # Whether to minimize ('min') or maximize ('max') the monitored metric
             enable_plots = True # save plots of metrics
-            early_stopping = True
+            early_stopping = False
             patience = 100 # Number of epochs with no improvement before stopping
             
             add_noise = True # Noise injection for training data

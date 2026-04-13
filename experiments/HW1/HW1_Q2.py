@@ -113,6 +113,15 @@ if __name__ == "__main__":
     optimizer = get_optimizer(cfg.training.optimizer, mlp_model.parameters(), 
                               lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
     
+    # Scheduler
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer,
+        mode="min",          # because you monitor RMSE
+        factor=0.5,          # LR *= factor when plateau
+        patience=80,         # epochs with no improvement before reducing LR
+        min_lr=1e-4,
+    )
+    
     # Train the model 
     trainer = Trainer(
         mlp_model,
@@ -122,6 +131,7 @@ if __name__ == "__main__":
         loss_fn,
         trainer_name=cfg.training.trainer.trainer_name,
         epochs=cfg.training.epochs,
+        scheduler=scheduler, 
         device=cfg.device,
         noise_std=cfg.training.trainer.noise.noise_std,
         noise_frac=cfg.training.trainer.noise.noise_frac,

@@ -140,3 +140,7 @@ def get_log_dir (log_dir, train_label: str)-> str:
         raise RuntimeError(f"Could not create or access log directory: {log_dir}") from e
 
     return log_dir
+
+def count_trainable_params(model: torch.nn.Module) -> int:
+    """Returns the total number of trainable parameters (weights + biases)."""
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)

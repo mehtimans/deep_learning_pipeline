@@ -17,6 +17,7 @@ import copy
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
 from deep_learning_course.utils import METRIC_REGISTRY
 
@@ -117,6 +118,12 @@ class Trainer:
         # Enable/disable automatic plotting
         self.enable_plots = enable_plots
 
+        # TensorBoard writer
+        tb_path = os.path.join(self.log_dir, "tensorboard", self.trainer_name)
+        os.makedirs(tb_path, exist_ok=True)
+        self.writer = SummaryWriter(log_dir=tb_path)  
+
+
     
     def train(self):
         """
@@ -162,6 +169,12 @@ class Trainer:
             for name, value in val_metrics.items():
                 self.history[f"val_{name}"].append(value.item())
 
+            # Tensorbord 
+            for key, values in self.history.items():
+                if key == "epoch":
+                    continue
+                self.writer.add_scalar(key, values[-1], epoch)
+
             # Determine if monitored metric improved
             improved = (
                 (self.mode == "min" and monitor_value < self.best_score) or
@@ -199,6 +212,7 @@ class Trainer:
         # Save logs and generate plots
         self.save_log(self.history)
         self.plotter(self.history)
+        self.writer.close()
         
         return self.best_model
 
