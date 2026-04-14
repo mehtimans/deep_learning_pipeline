@@ -20,6 +20,7 @@ setup(
         "pandas",
         "matplotlib",
         "numpy>=1.20",
+        "tensorboard",
         # PyTorch must be installed separately (see https://pytorch.org)
     ],
 )
