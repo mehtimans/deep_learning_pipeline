@@ -12,3 +12,4 @@ or research purposes.
 
 from .Base.base_config import BaseConfig
 from .HW1_config import HW1Q1cfg, HW1Q2cfg
+from .HW2_config import HW2cfg

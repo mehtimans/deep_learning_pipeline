@@ -76,7 +76,7 @@ class MLPNetwork(nn.Module):
 
 
 def _orthogonal_init(m: nn.Module):
-    if isinstance(m, nn.Linear):
+    if isinstance(m, nn.Conv2d):
         nn.init.orthogonal_(m.weight)
         if m.bias is not None:
             nn.init.zeros_(m.bias)
