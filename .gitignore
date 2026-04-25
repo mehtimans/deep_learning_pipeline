@@ -6,6 +6,10 @@ logs/MLP/*
 logs/Autoencoder/*
 !logs/Autoencoder/.gitkeep
 
+logs/CNN/*
+!logs/CNN/.gitkeep
+
+
 __pycache__/
 *.pyc
 *.egg-info/
