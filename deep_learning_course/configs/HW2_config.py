@@ -13,39 +13,79 @@ or research purposes.
 from deep_learning_course.configs import BaseConfig
 
 class HW2cfg(BaseConfig):
-    seed = 42 # Random seed for reproducibility
+    seed = 12 # Random seed for reproducibility
     device = 'cuda'
     class training(BaseConfig.training):
-        hidden_dims = [16, 32] # Dimensions of hidden layers
-        epochs = 3000
-        batch_size = 128 # Mini-batch size for training
-        learning_rate = 1e-3
+        mlp_hidden_dims = [512] # Dimensions of hidden layers
+        epochs = 150
+        batch_size = 512 # Mini-batch size for training
+        learning_rate = 1e-4
 
-        activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
+        mlp_activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
+        cnn_activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
+        
         optimizer = "adam" # Optimizer algorithm: "adam", "sgd","adamw"
         weight_decay = 1e-4 # L2 regularization, This extra term penalizes large weights.
-        loss = "mse"  # Loss function to minimize: "mse", "smooth_l1", "l1", "crossentropy"
+        loss = "crossentropy"  # Loss function to minimize: "mse", "smooth_l1", "l1", "crossentropy"
         
+        # Convolutional blocks defining the CNN architecture.
+        # Each block contains:
+        # - out_channels: # feature maps
+        # - num_convs: # sequential Conv2D layers
+        # - kernel_size, stride, padding: conv parameters
+        # - pool: optional MaxPool config or None
+        # - batch_normalization: enable BatchNorm2d
+        conv_blocks = [
+            {
+                "out_channels": 32,
+                "num_convs": 2,
+                "kernel_size": 3,
+                "stride": 1,
+                "padding": 1,
+                "pool": {"size": 2, "stride": 1, "padding": 0},
+                "batch_normalization": True
+            },
+            {
+                "out_channels": 64,
+                "num_convs": 2,
+                "kernel_size": 3,
+                "stride": 1,
+                "padding": 1,
+                "pool": {"size": 2, "stride": 2, "padding": 0},
+                "batch_normalization": True
+            },
+            {
+                "out_channels": 128,
+                "num_convs": 2,
+                "kernel_size": 3,
+                "stride": 1,
+                "padding": 1,
+                "pool": {"size": 2, "stride": 2, "padding": 0},
+                "batch_normalization": True
+            },
+        ]
+
         class trainer(BaseConfig.training.trainer):
-            trainer_name = "MLP" # Identifier for this specific trainer run
-            metrics = ["mse", "rmse", "r2"] # Metrics to compute and track during training: "mse", "rmse", "r2", "accuracy"
-            monitor = "rmse"  # Metric to monitor for early stopping and best model
-            mode = "min" # Whether to minimize ('min') or maximize ('max') the monitored metric
+            trainer_name = "CNN" # Identifier for this specific trainer run
+            metrics = ["accuracy"] # Metrics to compute and track during training: "mse", "rmse", "r2", "accuracy"
+            monitor = "accuracy"  # Metric to monitor for early stopping and best model
+            mode = "max" # Whether to minimize ('min') or maximize ('max') the monitored metric
             enable_plots = True # save plots of metrics
-            early_stopping = False
-            patience = 100 # Number of epochs with no improvement before stopping
+            early_stopping = True
+            patience = 5 # Number of epochs with no improvement before stopping
             
             add_noise = True # Noise injection for training data
             class noise(BaseConfig.training.trainer.noise):
-                noise_std = 0.005 # Standard deviation of the Gaussian noise to add
-                noise_frac = 0.02 # Fraction of samples that will receive noise perturbation
+                noise_std = 0.000 # Standard deviation of the Gaussian noise to add
+                noise_frac = 0.00 # Fraction of samples that will receive noise perturbation
         
     class datageneration:
         num_classes = 10
+        num_channels = 1
         samples_per_class = 2000
         image_dim = 14
-        mean_range = [-5, 5]
-        variance = 1.5
+        mean_range = [-5, 4]
+        variance = 2.25
 
     class evaluation(BaseConfig.evaluation):
         val_split = 0.2 # Proportion of training data to use for validation
@@ -58,3 +98,4 @@ class HW2cfg(BaseConfig):
 
         experiment = "HW2" # Name of the overall experiment
         dataset = "Toy_Data" # Name of the dataset being used
+

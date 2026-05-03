@@ -123,8 +123,11 @@ class Trainer:
         os.makedirs(tb_path, exist_ok=True)
         self.writer = SummaryWriter(log_dir=tb_path)  
 
+        # detect whether the model uses IAM loss
+        self.iam_loss = getattr(self.model, "iam_loss", False)
+        self.angular_margin_loss = getattr(self.model, "angular_margin_loss", False)
+        self.CNN_flag = getattr(self.model, "CNN_flag", False)
 
-    
     def train(self):
         """
         Main training loop.
@@ -249,8 +252,21 @@ class Trainer:
             self.optimizer.zero_grad()
 
             # Forward pass
-            pred = self.model(xb_noisy)
-            loss = self.loss_fn(pred, yb)
+            if self.iam_loss:
+                logits, features, weights = self.model(xb_noisy)
+                loss = self.loss_fn(logits, features, weights, yb)
+                pred = logits
+            elif self.angular_margin_loss:
+                logits, features, weights = self.model(xb)
+                loss = self.loss_fn(features, weights, yb)
+                pred = logits
+            elif self.CNN_flag:
+                logits, features, weights = self.model(xb)
+                loss = self.loss_fn(logits, yb)
+                pred = logits
+            else:
+                pred = self.model(xb_noisy)
+                loss = self.loss_fn(pred, yb)
 
             # Backpropagation
             loss.backward()
@@ -290,8 +306,21 @@ class Trainer:
         for xb, yb in self.val_dl:
             xb, yb = xb.to(self.device), yb.to(self.device)
 
-            pred = self.model(xb)
-            loss = self.loss_fn(pred, yb)
+            if self.iam_loss:
+                logits, features, weights = self.model(xb)
+                loss = self.loss_fn(logits, features, weights, yb)
+                pred = logits
+            elif self.angular_margin_loss:
+                logits, features, weights = self.model(xb)
+                loss = self.loss_fn(features, weights, yb)
+                pred = logits
+            elif self.CNN_flag:
+                logits, features, weights = self.model(xb)
+                loss = self.loss_fn(logits, yb)
+                pred = logits
+            else:
+                pred = self.model(xb)
+                loss = self.loss_fn(pred, yb)
             
             total_loss += loss.item() * xb.size(0)
             preds_all.append(pred.detach())

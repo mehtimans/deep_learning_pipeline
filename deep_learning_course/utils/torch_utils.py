@@ -11,8 +11,10 @@ or research purposes.
 """
 
 import torch
+from torch import Tensor
 import torch.nn as nn
-
+from deep_learning_course.utils import IAMLoss
+from deep_learning_course.utils import AngularMarginLoss
 
 def get_activation(name: str) -> nn.Module:
     '''
@@ -38,6 +40,8 @@ def get_loss(name: str, **kwargs) -> nn.Module:
     if name == "smooth_l1": return nn.SmoothL1Loss(**kwargs)
     if name == "l1": return nn.L1Loss(**kwargs)
     if name == "crossentropy": return nn.CrossEntropyLoss(**kwargs)
+    if name == "iam": return IAMLoss(**kwargs)
+    if name == "angularmargin": return AngularMarginLoss(**kwargs)
     raise ValueError(f"Unknown loss '{name}'")
 
 def get_optimizer(name: str, params, lr: float, **kwargs) -> torch.optim.Optimizer:
@@ -63,3 +67,20 @@ def get_optimizer(name: str, params, lr: float, **kwargs) -> torch.optim.Optimiz
         return torch.optim.AdamW(params, lr=lr, **kwargs)
 
     raise ValueError(f"Unknown optimizer '{name}'")
+
+def pca_torch(X: Tensor , n_components: int = 2) -> Tensor:
+    """
+    Perform PCA using Torch's SVD.
+    Input:
+      X: [n_samples, n_features]
+    Output:
+      X_pca: [n_samples, n_components]
+    """
+    X_mean = torch.mean(X, dim=0)
+    X_centered = X - X_mean
+
+    U, S, V = torch.linalg.svd(X_centered, full_matrices=False) 
+    components = V[:, :n_components]
+
+    X_pca = torch.matmul(X_centered, components)
+    return X_pca

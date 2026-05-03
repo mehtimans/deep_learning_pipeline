@@ -54,6 +54,9 @@ class MLPNetwork(nn.Module):
                     net_layers.append(get_activation(activation))
         self.mlp_net = nn.Sequential(*net_layers)
 
+        self.features = self.mlp_net[:-1]
+        self.classifier = self.mlp_net[-1]
+
         self.apply(_orthogonal_init)
         nn.init.orthogonal_(self.mlp_net[-1].weight, gain=0.01)
         nn.init.zeros_(self.mlp_net[-1].bias)

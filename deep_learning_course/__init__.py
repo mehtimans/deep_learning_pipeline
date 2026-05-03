@@ -16,3 +16,4 @@ DEEP_LEARNING_COURSE_ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath
 DEEP_LEARNING_COURSE_MODELS_DIR = os.path.join(DEEP_LEARNING_COURSE_ROOT_DIR, 'deep_learning_course', 'models')
 DEEP_LEARNING_COURSE_RESOURCES_DIR = os.path.join(DEEP_LEARNING_COURSE_ROOT_DIR, 'resources')
 
+

@@ -10,10 +10,13 @@ or research purposes.
 # Date: March 2026
 """
 
-from .torch_utils import get_activation, get_loss, get_optimizer
+from .iam_loss import IAMLoss
+from .angular_margin_loss import AngularMarginLoss
+from .torch_utils import get_activation, get_loss, get_optimizer, pca_torch
 from .helpers import get_args, set_seed, update_cfg_from_args, class_to_dict
 from .data_utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit, count_trainable_params
 from .metrics import METRIC_REGISTRY
+
 
 
 

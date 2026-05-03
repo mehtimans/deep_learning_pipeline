@@ -20,7 +20,7 @@ class BaseConfig():
         learning_rate = 1e-4
 
         activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
-        optimizer = "adam" # Optimizer algorithm: "adam", "sgd","adamw"
+        optimizer = "adam" # Optimizer algorithm: "adam", "sgd","adamw", "iam"
         weight_decay = 1e-4 # L2 regularization, This extra term penalizes large weights.
         momentum = 0.9 # Momentum term (used when optimizer is "sgd")
         loss = "mse"  # e.g. "mse", "smooth_l1", "l1", "crossentropy"
