@@ -13,7 +13,7 @@ or research purposes.
 from deep_learning_course.configs import BaseConfig
 
 class HW2cfg(BaseConfig):
-    seed = 12 # Random seed for reproducibility
+    seed = -1 # Random seed for reproducibility
     device = 'cuda'
     class training(BaseConfig.training):
         mlp_hidden_dims = [512] # Dimensions of hidden layers
@@ -72,7 +72,7 @@ class HW2cfg(BaseConfig):
             mode = "max" # Whether to minimize ('min') or maximize ('max') the monitored metric
             enable_plots = True # save plots of metrics
             early_stopping = True
-            patience = 5 # Number of epochs with no improvement before stopping
+            patience = 15 # Number of epochs with no improvement before stopping
             
             add_noise = True # Noise injection for training data
             class noise(BaseConfig.training.trainer.noise):

@@ -248,12 +248,12 @@ def plot_PCA(model, test_loader,  device= "cuda"):
     logits_list = []
     labels_list = []
 
-    with torch.no_grad():  # No gradient tracking
+    with torch.no_grad():  
         for images, targets in test_loader:
             images = images.to(device)
             targets = targets.to(device)
 
-            outputs = model(images)  # This should return logits, not softmax
+            outputs = model(images)  
             if isinstance(outputs, tuple):
                 output_t = outputs[0]
             else:
@@ -287,7 +287,7 @@ def plot_PCA(model, test_loader,  device= "cuda"):
 
     plt.xlabel("Principal Component 1")
     plt.ylabel("Principal Component 2")
-    plt.title("PCA of Logit Features (Layer before Softmax)")
+    plt.title("PCA of Logit Features")
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
@@ -343,7 +343,7 @@ def plot_PCA_3D(model, test_loader, device="cuda"):
     ax.set_xlabel("Principal Component 1")
     ax.set_ylabel("Principal Component 2")
     ax.set_zlabel("Principal Component 3")
-    ax.set_title("3D PCA of Logit Features (Layer before Softmax)")
+    ax.set_title("3D PCA of Logit Features ")
 
     ax.legend(bbox_to_anchor=(1.05,1), loc='upper left')
     plt.tight_layout()

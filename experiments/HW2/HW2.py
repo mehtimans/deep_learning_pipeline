@@ -141,8 +141,8 @@ if __name__ == "__main__":
     # evaluate_model(CNN_model, val_dl)
     # plot_PCA(CNN_model, val_dl)
     # plot_PCA_3D(CNN_model, val_dl)
-    # evaluate_four_metrics(CNN_model, val_dl)
-    plot_class_center_angles(CNN_model, val_dl)
+    evaluate_four_metrics(CNN_model, train_dl)
+    # plot_class_center_angles(CNN_model, val_dl)
     # cosine_test()
 
     ## Training second model with IAM Loss
@@ -214,8 +214,8 @@ if __name__ == "__main__":
     # evaluate_model(CNN_model_IAM, val_dl)
     # plot_PCA(CNN_model_IAM, val_dl)
     # plot_PCA_3D(CNN_model_IAM, val_dl)
-    # evaluate_four_metrics(CNN_model_IAM, val_dl)
-    plot_class_center_angles(CNN_model_IAM, val_dl)
+    evaluate_four_metrics(CNN_model_IAM, train_dl)
+    # plot_class_center_angles(CNN_model_IAM, val_dl)
 
     # save config
     config_path = os.path.join(cfg.logger.log_dir, "config.json")
