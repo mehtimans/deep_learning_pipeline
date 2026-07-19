@@ -21,7 +21,7 @@ from torch.utils.data import Dataset
 
 
 from deep_learning_course.models import MLPNetwork, AutoEncoderNetwork 
-from deep_learning_course.configs import HW1Q1cfg
+from deep_learning_course.configs import AutoEncoderCfg
 from deep_learning_course.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
 from deep_learning_course.utils import get_dataloader, get_log_dir, save_model_jit, count_trainable_params
 from deep_learning_course.utils import get_loss, get_optimizer
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     args = get_args()
 
     # final configuration 
-    cfg = update_cfg_from_args(args, HW1Q1cfg())
+    cfg = update_cfg_from_args(args, AutoEncoderCfg())
     cfg_dict = class_to_dict(cfg)
     print(json.dumps(cfg_dict, indent=4))
 

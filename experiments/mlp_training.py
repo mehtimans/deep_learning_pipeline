@@ -17,7 +17,7 @@ import json
 import torch 
 
 from deep_learning_course.models import MLPNetwork
-from deep_learning_course.configs import HW1Q2cfg
+from deep_learning_course.configs import MLPCfg
 from deep_learning_course.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
 from deep_learning_course.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
 from deep_learning_course.utils import get_loss, get_optimizer
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     args = get_args()
     
     # final configuration 
-    cfg = update_cfg_from_args(args, HW1Q2cfg())
+    cfg = update_cfg_from_args(args, MLPCfg())
     cfg_dict = class_to_dict(cfg)
     print(json.dumps(cfg_dict, indent=4))
 
