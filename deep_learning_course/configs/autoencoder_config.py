@@ -63,6 +63,6 @@ class AutoEncoderCfg(BaseConfig):
         classifier_save_model_label = "Classifier_JIT_model"
         log_dir = -1 
 
-        experiment = "HW1_Q1" # Name of the overall experiment
+        experiment = "autoencoder_training" # Name of the overall experiment
         dataset = "MNIST" # Name of the dataset being used
        

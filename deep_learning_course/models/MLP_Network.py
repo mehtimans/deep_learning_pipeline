@@ -54,14 +54,25 @@ class MLPNetwork(nn.Module):
                     net_layers.append(get_activation(activation))
         self.mlp_net = nn.Sequential(*net_layers)
 
-        self.features = self.mlp_net[:-1]
-        self.classifier = self.mlp_net[-1]
+        # self.features = self.mlp_net[:-1]
+        # self.classifier = self.mlp_net[-1]
 
         self.apply(_orthogonal_init)
         nn.init.orthogonal_(self.mlp_net[-1].weight, gain=0.01)
         nn.init.zeros_(self.mlp_net[-1].bias)
 
         print(f"MLP Network Structure: {self.mlp_net}")
+
+    @property
+    def features(self) -> nn.Sequential:
+        """Return all layers before the final output layer."""
+        return self.mlp_net[:-1]
+
+    @property
+    def classifier(self) -> nn.Module:
+        """Return the final output layer."""
+        return self.mlp_net[-1]
+
 
     @torch.no_grad()
     def set_normalization(self, mean, std, eps: float = 1e-6):
@@ -79,7 +90,7 @@ class MLPNetwork(nn.Module):
 
 
 def _orthogonal_init(m: nn.Module):
-    if isinstance(m, nn.Conv2d):
+    if isinstance(m, nn.Linear):
         nn.init.orthogonal_(m.weight)
         if m.bias is not None:
             nn.init.zeros_(m.bias)

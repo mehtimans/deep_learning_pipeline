@@ -123,9 +123,7 @@ class Trainer:
         os.makedirs(tb_path, exist_ok=True)
         self.writer = SummaryWriter(log_dir=tb_path)  
 
-        # detect whether the model uses IAM loss
-        self.iam_loss = getattr(self.model, "iam_loss", False)
-        self.angular_margin_loss = getattr(self.model, "angular_margin_loss", False)
+        # detect whether the model is CNN
         self.CNN_flag = getattr(self.model, "CNN_flag", False)
 
     def train(self):
@@ -252,16 +250,8 @@ class Trainer:
             self.optimizer.zero_grad()
 
             # Forward pass
-            if self.iam_loss:
-                logits, features, weights = self.model(xb_noisy)
-                loss = self.loss_fn(logits, features, weights, yb)
-                pred = logits
-            elif self.angular_margin_loss:
-                logits, features, weights = self.model(xb)
-                loss = self.loss_fn(features, weights, yb)
-                pred = logits
-            elif self.CNN_flag:
-                logits, features, weights = self.model(xb)
+            if self.CNN_flag:
+                logits = self.model(xb_noisy)
                 loss = self.loss_fn(logits, yb)
                 pred = logits
             else:
@@ -306,16 +296,8 @@ class Trainer:
         for xb, yb in self.val_dl:
             xb, yb = xb.to(self.device), yb.to(self.device)
 
-            if self.iam_loss:
-                logits, features, weights = self.model(xb)
-                loss = self.loss_fn(logits, features, weights, yb)
-                pred = logits
-            elif self.angular_margin_loss:
-                logits, features, weights = self.model(xb)
-                loss = self.loss_fn(features, weights, yb)
-                pred = logits
-            elif self.CNN_flag:
-                logits, features, weights = self.model(xb)
+            if self.CNN_flag:
+                logits = self.model(xb)
                 loss = self.loss_fn(logits, yb)
                 pred = logits
             else:

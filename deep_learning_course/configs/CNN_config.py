@@ -12,7 +12,7 @@ or research purposes.
 
 from deep_learning_course.configs import BaseConfig
 
-class HW2cfg(BaseConfig):
+class CNNCfg(BaseConfig):
     seed = -1 # Random seed for reproducibility
     device = 'cuda'
     class training(BaseConfig.training):
@@ -96,6 +96,6 @@ class HW2cfg(BaseConfig):
         save_model_label = "CNN_JIT_model"
         log_dir = -1 # Directory to save logs (-1 means use default location)
 
-        experiment = "HW2" # Name of the overall experiment
+        experiment = "cnn_training" # Name of the overall experiment
         dataset = "Toy_Data" # Name of the dataset being used
 

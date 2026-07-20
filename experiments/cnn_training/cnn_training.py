@@ -24,8 +24,8 @@ from torch.utils.data import ConcatDataset, Dataset
 import torch.nn.functional as F
 from mpl_toolkits.mplot3d import Axes3D
 
-from deep_learning_course.models import CNNNetwork, CNNNetworkIAM
-from deep_learning_course.configs import HW2cfg
+from deep_learning_course.models import CNNNetwork
+from deep_learning_course.configs import CNNCfg
 from deep_learning_course.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
 from deep_learning_course.utils import split_dataset, get_dataloader, get_log_dir, save_model_jit, count_trainable_params
 from deep_learning_course.utils import get_loss, get_optimizer, pca_torch
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     args = get_args()
     
     # final configuration 
-    cfg = update_cfg_from_args(args, HW2cfg())
+    cfg = update_cfg_from_args(args, CNNCfg())
     cfg_dict = class_to_dict(cfg)
     print(json.dumps(cfg_dict, indent=4))
 
@@ -147,32 +147,32 @@ if __name__ == "__main__":
 
     ## Training second model with IAM Loss
     # load model
-    CNN_model_IAM = CNNNetworkIAM(
-        input_channels=data_channel,
-        input_height=data_height,
-        input_width=data_width,
-        num_outputs=cfg.datageneration.num_classes,
-        conv_blocks=cfg.training.conv_blocks,
-        cnn_activation=cfg.training.cnn_activation,
-        mlp_network_hidden_dims=cfg.training.mlp_hidden_dims,
-        mlp_activation=cfg.training.mlp_activation
-    ).to(cfg.device)
+    # CNN_model_IAM = CNNNetwork(
+    #     input_channels=data_channel,
+    #     input_height=data_height,
+    #     input_width=data_width,
+    #     num_outputs=cfg.datageneration.num_classes,
+    #     conv_blocks=cfg.training.conv_blocks,
+    #     cnn_activation=cfg.training.cnn_activation,
+    #     mlp_network_hidden_dims=cfg.training.mlp_hidden_dims,
+    #     mlp_activation=cfg.training.mlp_activation
+    # ).to(cfg.device)
     
-    CNN_IAM_num_params = count_trainable_params(CNN_model_IAM)
-    print(f"CNN Network has {CNN_IAM_num_params:,} trainable parameters")
+    # CNN_IAM_num_params = count_trainable_params(CNN_model_IAM)
+    # print(f"CNN Network has {CNN_IAM_num_params:,} trainable parameters")
 
-    CNN_model_IAM.set_normalization(mean, std)  
+    # CNN_model_IAM.set_normalization(mean, std)  
 
     # IAM loss function 
-    cfg.training.loss = "angularmargin"
-    beta=0.3
+    # cfg.training.loss = "angularmargin"
+    # beta=0.3
     # s=30.0
     # m=0.3
-    loss_fn = get_loss(cfg.training.loss, s=30.0, m=0.5, reduction="mean")
+    # loss_fn = get_loss(cfg.training.loss, s=30.0, m=0.5, reduction="mean")
 
     # Optimizer 
-    optimizer = get_optimizer(cfg.training.optimizer, CNN_model_IAM.parameters(), 
-                              lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
+    # optimizer = get_optimizer(cfg.training.optimizer, CNN_model_IAM.parameters(), 
+    #                           lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
     
     # # Scheduler
     # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -184,37 +184,37 @@ if __name__ == "__main__":
     # )
     
     # Train the model 
-    cfg.training.trainer.trainer_name = "CNN_WITH_IAM"
-    trainer_IAM = Trainer(
-        CNN_model_IAM,
-        train_dl,
-        val_dl,
-        optimizer,
-        loss_fn,
-        trainer_name=cfg.training.trainer.trainer_name,
-        epochs=cfg.training.epochs,
-        # scheduler=scheduler, 
-        device=cfg.device,
-        noise_std=cfg.training.trainer.noise.noise_std,
-        noise_frac=cfg.training.trainer.noise.noise_frac,
-        metrics=cfg.training.trainer.metrics,
-        monitor=cfg.training.trainer.monitor,
-        mode=cfg.training.trainer.mode,
-        early_stopping=cfg.training.trainer.early_stopping,
-        patience=5,
-        log_dir=cfg.logger.log_dir 
-    )
+    # cfg.training.trainer.trainer_name = "CNN_WITH_IAM"
+    # trainer_IAM = Trainer(
+    #     CNN_model_IAM,
+    #     train_dl,
+    #     val_dl,
+    #     optimizer,
+    #     loss_fn,
+    #     trainer_name=cfg.training.trainer.trainer_name,
+    #     epochs=cfg.training.epochs,
+    #     # scheduler=scheduler, 
+    #     device=cfg.device,
+    #     noise_std=cfg.training.trainer.noise.noise_std,
+    #     noise_frac=cfg.training.trainer.noise.noise_frac,
+    #     metrics=cfg.training.trainer.metrics,
+    #     monitor=cfg.training.trainer.monitor,
+    #     mode=cfg.training.trainer.mode,
+    #     early_stopping=cfg.training.trainer.early_stopping,
+    #     patience=5,
+    #     log_dir=cfg.logger.log_dir 
+    # )
 
-    best_model_IAM = trainer_IAM.train() # Note: best_model is stored on CPU for portability
+    # best_model_IAM = trainer_IAM.train() # Note: best_model is stored on CPU for portability
 
     # save model as a jit file
-    cfg.logger.save_model_label = "CNN_IAM_JIT_model"
-    model_path = save_model_jit(best_model_IAM, cfg.logger.log_dir, cfg.logger.save_model_label)
+    # cfg.logger.save_model_label = "CNN_IAM_JIT_model"
+    # model_path = save_model_jit(best_model_IAM, cfg.logger.log_dir, cfg.logger.save_model_label)
 
     # evaluate_model(CNN_model_IAM, val_dl)
     # plot_PCA(CNN_model_IAM, val_dl)
     # plot_PCA_3D(CNN_model_IAM, val_dl)
-    evaluate_four_metrics(CNN_model_IAM, train_dl)
+    # evaluate_four_metrics(CNN_model_IAM, train_dl)
     # plot_class_center_angles(CNN_model_IAM, val_dl)
 
     # save config

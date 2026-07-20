@@ -13,4 +13,4 @@ or research purposes.
 from .Base.base_config import BaseConfig
 from .autoencoder_config import AutoEncoderCfg
 from .mlp_config import MLPCfg
-from .HW2_config import HW2cfg
+from .CNN_config import CNNCfg

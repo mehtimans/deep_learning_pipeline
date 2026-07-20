@@ -49,5 +49,5 @@ class MLPCfg(BaseConfig):
         save_model_label = "MLP_JIT_model"
         log_dir = -1 # Directory to save logs (-1 means use default location)
 
-        experiment = "HW1_Q2" # Name of the overall experiment
+        experiment = "mlp_training" # Name of the overall experiment
         dataset = "Life_Expectancy_Data" # Name of the dataset being used
