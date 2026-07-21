@@ -1,6 +1,6 @@
 
 
-###Installation###
+### Installation ###
 
 Follow these steps to install the `deep_learning_course` package and all required dependencies.
 
@@ -31,16 +31,16 @@ This installs the `deep_learning_course` package and its required Python depende
 
 ---
 
-###Usage###
+### Usage ###
 
 After installing the package and PyTorch, you can run the homework scripts directly from the command line.
 
-#### Running HW1 – Autoencoder (HW1_Q2)
+#### Running Autoencoder experiment
 
-From the `experiments/HW1` directory:
+From the `experiments` directory:
 
 ```bash
-python HW1_Q2.py \
+python autoencoder_training.py \
     --device cuda \
     --epochs 1000 \
     --batch_size 128 \
@@ -59,12 +59,12 @@ This trains the **Autoencoder model** with:
 
 
 
-#### Running HW1 – MLP Classification (HW1_Q1)
+#### Running MLP Classification 
 
-Also from the `experiments/HW1` directory:
+Also from the `experiments` directory:
 
 ```bash
-python HW1_Q1.py \
+python mlp_training.py \
     --device cuda \
     --epochs 1000 \
     --learning_rate 0.001 \
