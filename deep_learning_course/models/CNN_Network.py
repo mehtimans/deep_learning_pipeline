@@ -11,7 +11,7 @@ or research purposes.
 """
 import torch
 import torch.nn as nn
-from typing import List
+from typing import List, Tuple
 
 from deep_learning_course.utils import get_activation
 from deep_learning_course.models import MLPNetwork
@@ -151,21 +151,34 @@ class CNNNetwork(nn.Module):
         self.x_std.copy_(std_t)
         self.normalize_inputs = True 
 
-    def forward(self, x: torch.Tensor, return_auxiliary: bool = False):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.normalize_inputs:
             x = (x - self.x_mean) / self.x_std
 
         x = self.convolutional_net(x)  # CNN feature extraction
         x = x.view(x.size(0), -1)  # flatten
 
-        features = self.mlp_net.features(x)
-        logits = self.mlp_net.classifier(features) # Raw class scores
-        
-        if return_auxiliary:
-            weights = self.mlp_net.classifier.weight
-            return logits, features, weights
+        logits = self.mlp_net(x)
 
         return logits
+    
+    @torch.jit.export
+    def forward_with_features(
+        self,
+        x: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+
+        if self.normalize_inputs:
+            x = (x - self.x_mean) / self.x_std
+
+        x = self.convolutional_net(x)
+        x = torch.flatten(x, start_dim=1)
+
+        features = self.mlp_net.features(x)
+        logits = self.mlp_net.classifier(features)
+        weights = self.mlp_net.classifier_weight()
+
+        return logits, features, weights
     
 def _orthogonal_init(m: nn.Module):
     # Apply orthogonal initialization to convolution layers

@@ -32,9 +32,9 @@ from deep_learning_course.utils import get_loss, get_optimizer, pca_torch
 from deep_learning_course.pipeline import Trainer
 from deep_learning_course import DEEP_LEARNING_COURSE_RESOURCES_DIR, DEEP_LEARNING_COURSE_ROOT_DIR
 
-from HW2_fun import Dataset_generation, compute_normalization_stats, compute_covariance_matrix, plot_mean_histograms
-from HW2_fun import mean_classifier_confusion_matrix, evaluate_model, plot_PCA, plot_PCA_3D, cosine_test
-from HW2_fun import evaluate_four_metrics, plot_class_center_angles
+from cnn_utils import Dataset_generation, compute_normalization_stats, compute_covariance_matrix, plot_mean_histograms
+from cnn_utils import mean_classifier_confusion_matrix, evaluate_model, plot_PCA, plot_PCA_3D, cosine_test
+from cnn_utils import evaluate_embedding_quality, plot_class_center_angles
 
 
 if __name__ == "__main__":
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     # evaluate_model(CNN_model, val_dl)
     # plot_PCA(CNN_model, val_dl)
     # plot_PCA_3D(CNN_model, val_dl)
-    evaluate_four_metrics(CNN_model, train_dl)
+    evaluate_embedding_quality(CNN_model, train_dl)
     # plot_class_center_angles(CNN_model, val_dl)
     # cosine_test()
 
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     # evaluate_model(CNN_model_IAM, val_dl)
     # plot_PCA(CNN_model_IAM, val_dl)
     # plot_PCA_3D(CNN_model_IAM, val_dl)
-    # evaluate_four_metrics(CNN_model_IAM, train_dl)
+    # evaluate_embedding_quality(CNN_model_IAM, train_dl)
     # plot_class_center_angles(CNN_model_IAM, val_dl)
 
     # save config

@@ -63,16 +63,21 @@ class MLPNetwork(nn.Module):
 
         print(f"MLP Network Structure: {self.mlp_net}")
 
-    @property
-    def features(self) -> nn.Sequential:
-        """Return all layers before the final output layer."""
-        return self.mlp_net[:-1]
+    def features(self, x: torch.Tensor) -> torch.Tensor:
+        """Pass x through all MLP layers except the final output layer."""
+        for index, layer in enumerate(self.mlp_net):
+            if index < len(self.mlp_net) - 1:
+                x = layer(x)
 
-    @property
-    def classifier(self) -> nn.Module:
-        """Return the final output layer."""
-        return self.mlp_net[-1]
+        return x
 
+    def classifier(self, features: torch.Tensor) -> torch.Tensor:
+        """Pass the embedding through the final output layer."""
+        return self.mlp_net[-1](features)
+
+    def classifier_weight(self) -> torch.Tensor:
+        """Return the final classifier weight matrix."""
+        return self.mlp_net[-1].weight
 
     @torch.no_grad()
     def set_normalization(self, mean, std, eps: float = 1e-6):

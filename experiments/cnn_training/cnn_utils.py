@@ -1,6 +1,15 @@
-import pandas as pd 
-import os
-import json 
+"""
+This source code is part of a deep learning coursework and research framework.
+It is provided for educational use, experimentation, and academic projects.
+
+You are free to use, modify, and redistribute this code for personal, academic,
+or research purposes.
+
+# Author: mahdi mansouri
+# GitHub: https://github.com/mehtimans
+# Date: April 2026
+"""
+
 from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,6 +24,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from deep_learning_course.utils import split_dataset, pca_torch
 
 def Dataset_generation(data_gen_cfg, val_split)-> Tuple[Dataset, Dataset]:
+    """Generate synthetic image dataset with class labels and train/validation split."""
 
     means_ = torch.linspace(data_gen_cfg.mean_range[0], 
                            data_gen_cfg.mean_range[1], 
@@ -50,7 +60,8 @@ def Dataset_generation(data_gen_cfg, val_split)-> Tuple[Dataset, Dataset]:
     return train_ds, val_ds
 
 def compute_normalization_stats(train_ds: Dataset) -> Tuple[Tensor, Tensor]:
-
+    """Compute channel-wise mean and standard deviation from training data."""
+   
     X_list = []
 
     for subset in train_ds.datasets:
@@ -66,7 +77,8 @@ def compute_normalization_stats(train_ds: Dataset) -> Tuple[Tensor, Tensor]:
     return mean, std
 
 def compute_covariance_matrix(train_ds: Dataset):
-        
+    """Compute and visualize covariance between class mean representations."""
+    
     X_list = []
     y_list = []
 
@@ -108,6 +120,7 @@ def compute_covariance_matrix(train_ds: Dataset):
     plt.show()
 
 def plot_mean_histograms(train_ds: Dataset):
+    """Plot pixel-value distributions for representative samples of each class."""
 
     X_list = []
     y_list = []
@@ -143,6 +156,7 @@ def plot_mean_histograms(train_ds: Dataset):
     plt.show()
 
 def mean_classifier_confusion_matrix(train_ds, test_ds):
+    """Evaluate a nearest class-mean classifier and visualize its confusion matrix."""
 
     X_train_list, y_train_list = [], []
     for subset in train_ds.datasets:
@@ -200,6 +214,7 @@ def mean_classifier_confusion_matrix(train_ds, test_ds):
     plt.show()
 
 def evaluate_model(model, test_loader, device= "cuda", num_classes=10):
+    """Evaluate model classification performance and generate confusion matrix."""
 
     # Initialize confusion matrix
     confusion_matrix = torch.zeros(num_classes, num_classes, dtype=torch.int64)
@@ -243,6 +258,7 @@ def evaluate_model(model, test_loader, device= "cuda", num_classes=10):
     print(f"Accuracy: {accuracy*100:.2f}%")
 
 def plot_PCA(model, test_loader,  device= "cuda"):
+    """Visualize model output representations using 2D PCA projection."""
 
     model.eval()
     logits_list = []
@@ -295,6 +311,7 @@ def plot_PCA(model, test_loader,  device= "cuda"):
 
 
 def plot_PCA_3D(model, test_loader, device="cuda"):
+    """Visualize model output representations using 3D PCA projection."""
 
     model.eval()
     logits_list = []
@@ -351,6 +368,7 @@ def plot_PCA_3D(model, test_loader, device="cuda"):
 
 
 def cosine_test():
+    """Verify cosine similarity calculation between normalized features and weights."""
 
     # Create dummy data
     B, D, C = 2, 128, 10
@@ -372,7 +390,10 @@ def cosine_test():
     print(f"Manual dot product of normalized vectors: {manual_cos.item():.6f}")
     print(f"Are they equal? {torch.isclose(cos_theta[0, 0], manual_cos).item()}")
 
-def evaluate_four_metrics(model, dataloader, device="cuda", num_classes=None):
+def evaluate_embedding_quality(model, dataloader, device="cuda", num_classes=None):
+    """Analyze model predictions and learned feature representations by computing
+       macro precision, macro recall, intra-class compactness, and inter-class separation."""
+    
     model.eval()
     all_features, all_preds, all_labels = [], [], []
 
@@ -447,6 +468,8 @@ def evaluate_four_metrics(model, dataloader, device="cuda", num_classes=None):
     print("Mean intra-class distance:", mean_intra)
 
 def plot_class_center_angles(model, val_dl, device="cuda", title="Class Center Angles"):
+    """Compute angular relationships between class embedding centers and visualize them."""
+
     model.eval()
     model.to(device)
 
