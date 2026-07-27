@@ -19,7 +19,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from deep_learning_course.utils import METRIC_REGISTRY
+from deep_learning_pipeline.utils import METRIC_REGISTRY
 
 class Trainer:
     def __init__(

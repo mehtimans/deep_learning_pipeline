@@ -10,7 +10,7 @@ or research purposes.
 # Date: March 2026
 """
 
-from deep_learning_course.configs import BaseConfig
+from deep_learning_pipeline.configs import BaseConfig
 
 class MLPCfg(BaseConfig):
     seed = 42 # Random seed for reproducibility

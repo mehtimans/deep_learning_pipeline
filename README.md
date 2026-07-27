@@ -2,13 +2,13 @@
 
 ### Installation ###
 
-Follow these steps to install the `deep_learning_course` package and all required dependencies.
+Follow these steps to install the `deep_learning_pipeline` package and all required dependencies.
 
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/mehtimans/deep_learning_course.git
-cd deep_learning_course
+git clone https://github.com/mehtimans/deep_learning_pipeline.git
+cd deep_learning_pipeline
 ```
 
 **2. Install PyTorch**
@@ -21,13 +21,13 @@ https://pytorch.org/get-started/locally/
 
 **3. Install the package using setup.py**
 
-Navigate to the `deep_learning_course` directory (the project root that contains `setup.py`) and run:
+Navigate to the `deep_learning_pipeline` directory (the project root that contains `setup.py`) and run:
 
 ```bash
 pip install -e .
 ```
 
-This installs the `deep_learning_course` package and its required Python dependencies.
+This installs the `deep_learning_pipeline` package and its required Python dependencies.
 
 ---
 

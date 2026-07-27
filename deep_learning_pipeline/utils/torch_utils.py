@@ -13,8 +13,8 @@ or research purposes.
 import torch
 from torch import Tensor
 import torch.nn as nn
-from deep_learning_course.utils import IAMLoss
-from deep_learning_course.utils import AngularMarginLoss
+from deep_learning_pipeline.utils import IAMLoss
+from deep_learning_pipeline.utils import AngularMarginLoss
 
 def get_activation(name: str) -> nn.Module:
     '''

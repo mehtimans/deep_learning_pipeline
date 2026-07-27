@@ -15,7 +15,7 @@ import torch
 import torch.nn as nn
 from typing import List
 
-from deep_learning_course.utils import get_activation
+from deep_learning_pipeline.utils import get_activation
 
 
 class AutoEncoderNetwork(nn.Module):

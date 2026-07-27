@@ -24,13 +24,13 @@ from torch.utils.data import ConcatDataset, Dataset
 import torch.nn.functional as F
 from mpl_toolkits.mplot3d import Axes3D
 
-from deep_learning_course.models import CNNNetwork
-from deep_learning_course.configs import CNNCfg
-from deep_learning_course.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
-from deep_learning_course.utils import split_dataset, get_dataloader, get_log_dir, save_model_jit, count_trainable_params
-from deep_learning_course.utils import get_loss, get_optimizer, pca_torch
-from deep_learning_course.pipeline import Trainer
-from deep_learning_course import DEEP_LEARNING_COURSE_RESOURCES_DIR, DEEP_LEARNING_COURSE_ROOT_DIR
+from deep_learning_pipeline.models import CNNNetwork
+from deep_learning_pipeline.configs import CNNCfg
+from deep_learning_pipeline.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
+from deep_learning_pipeline.utils import split_dataset, get_dataloader, get_log_dir, save_model_jit, count_trainable_params
+from deep_learning_pipeline.utils import get_loss, get_optimizer, pca_torch
+from deep_learning_pipeline.pipeline import Trainer
+from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_RESOURCES_DIR, DEEP_LEARNING_PIPELINE_ROOT_DIR
 
 from cnn_utils import Dataset_generation, compute_normalization_stats, compute_covariance_matrix, plot_mean_histograms
 from cnn_utils import mean_classifier_confusion_matrix, evaluate_model, plot_PCA, plot_PCA_3D, cosine_test

@@ -10,7 +10,7 @@ or research purposes.
 # Date: March 2026
 """
 
-from deep_learning_course.configs import BaseConfig
+from deep_learning_pipeline.configs import BaseConfig
 
 class AutoEncoderCfg(BaseConfig):
     seed = 42 # Random seed for reproducibility
@@ -55,7 +55,7 @@ class AutoEncoderCfg(BaseConfig):
 
     class evaluation(BaseConfig.evaluation):
         load_run = -1
-        load_autoencoder = -1 # "/home/mehtimans/deep_learning_course/logs/Autoencoder/2026-04-01_01-37-32_/JIT_model.pt"
+        load_autoencoder = -1 # "/home/mehtimans/deep_learning_pipeline/logs/Autoencoder/2026-04-01_01-37-32_/JIT_model.pt"
 
     class logger(BaseConfig.logger):
         train_label = 'Autoencoder'

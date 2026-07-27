@@ -17,7 +17,7 @@ from datetime import datetime
 import os
 import copy
 
-from deep_learning_course import DEEP_LEARNING_COURSE_ROOT_DIR
+from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_ROOT_DIR
 
 def split_dataset(
     X: Tensor,
@@ -125,7 +125,7 @@ def get_log_dir (log_dir, train_label: str)-> str:
     if log_dir == -1:
         # directory to save
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_")
-        log_root = os.path.join(DEEP_LEARNING_COURSE_ROOT_DIR, "logs")
+        log_root = os.path.join(DEEP_LEARNING_PIPELINE_ROOT_DIR, "logs")
         log_dir = os.path.join(log_root, train_label, timestamp)
         os.makedirs(log_dir, exist_ok=True)
 

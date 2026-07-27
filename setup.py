@@ -1,5 +1,5 @@
 """
-Setup script for installing the deep_learning_course package.
+Setup script for installing the deep_learning_pipeline package.
 
 """
 
@@ -7,12 +7,12 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name="deep_learning_course",
+    name="deep_learning_pipeline",
     version="0.1.0",
     description="A structured deep learning pipeline for coursework and projects",
     author="mahdi mansouri",
     author_email="mmhdimansouri@gmail.com",
-    url="https://github.com/mehtimans/deep_learning_course",
+    url="https://github.com/mehtimans/deep_learning_pipeline",
     license="MIT",
     packages=find_packages(),
     python_requires=">=3.8",

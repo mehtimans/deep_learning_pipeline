@@ -16,13 +16,13 @@ import json
 
 import torch 
 
-from deep_learning_course.models import MLPNetwork
-from deep_learning_course.configs import MLPCfg
-from deep_learning_course.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
-from deep_learning_course.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
-from deep_learning_course.utils import get_loss, get_optimizer
-from deep_learning_course.pipeline import Trainer
-from deep_learning_course import DEEP_LEARNING_COURSE_RESOURCES_DIR, DEEP_LEARNING_COURSE_ROOT_DIR
+from deep_learning_pipeline.models import MLPNetwork
+from deep_learning_pipeline.configs import MLPCfg
+from deep_learning_pipeline.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
+from deep_learning_pipeline.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
+from deep_learning_pipeline.utils import get_loss, get_optimizer
+from deep_learning_pipeline.pipeline import Trainer
+from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_RESOURCES_DIR, DEEP_LEARNING_PIPELINE_ROOT_DIR
 
 
 def load_dataset(data_dir: str):
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     cfg.logger.log_dir = get_log_dir(cfg.logger.log_dir, cfg.logger.train_label)
 
     # load dataset 
-    csv_folder = os.path.join(DEEP_LEARNING_COURSE_RESOURCES_DIR, "data", "Life_Expectancy_Data")
+    csv_folder = os.path.join(DEEP_LEARNING_PIPELINE_RESOURCES_DIR, "data", "Life_Expectancy_Data")
     csv_path = os.path.join(csv_folder, "Life Expectancy Data.csv")
     X, Y = load_dataset(csv_path)
     print("X shape", X.size())

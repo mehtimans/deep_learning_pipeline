@@ -20,13 +20,13 @@ from torchvision import datasets, transforms
 from torch.utils.data import Dataset
 
 
-from deep_learning_course.models import MLPNetwork, AutoEncoderNetwork 
-from deep_learning_course.configs import AutoEncoderCfg
-from deep_learning_course.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
-from deep_learning_course.utils import get_dataloader, get_log_dir, save_model_jit, count_trainable_params
-from deep_learning_course.utils import get_loss, get_optimizer
-from deep_learning_course.pipeline import Trainer
-from deep_learning_course import DEEP_LEARNING_COURSE_RESOURCES_DIR, DEEP_LEARNING_COURSE_ROOT_DIR
+from deep_learning_pipeline.models import MLPNetwork, AutoEncoderNetwork 
+from deep_learning_pipeline.configs import AutoEncoderCfg
+from deep_learning_pipeline.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
+from deep_learning_pipeline.utils import get_dataloader, get_log_dir, save_model_jit, count_trainable_params
+from deep_learning_pipeline.utils import get_loss, get_optimizer
+from deep_learning_pipeline.pipeline import Trainer
+from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_RESOURCES_DIR, DEEP_LEARNING_PIPELINE_ROOT_DIR
 
 class SelfSupervisedDataset(Dataset):
     def __init__(self, base_ds):
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     cfg.logger.log_dir = get_log_dir(cfg.logger.log_dir, cfg.logger.train_label)
 
     # load dataset 
-    data_root_path = os.path.join(DEEP_LEARNING_COURSE_RESOURCES_DIR, "data")
+    data_root_path = os.path.join(DEEP_LEARNING_PIPELINE_RESOURCES_DIR, "data")
     train_ds, val_ds = load_dataset(data_root_path)
     print("Train size:", len(train_ds))
     print("Validation size:", len(val_ds))

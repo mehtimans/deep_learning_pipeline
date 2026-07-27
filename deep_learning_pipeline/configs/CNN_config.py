@@ -10,7 +10,7 @@ or research purposes.
 # Date: April 2026
 """
 
-from deep_learning_course.configs import BaseConfig
+from deep_learning_pipeline.configs import BaseConfig
 
 class CNNCfg(BaseConfig):
     seed = -1 # Random seed for reproducibility

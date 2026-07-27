@@ -21,7 +21,7 @@ from torch.utils.data import ConcatDataset, Dataset
 import torch.nn.functional as F
 from mpl_toolkits.mplot3d import Axes3D
 
-from deep_learning_course.utils import split_dataset, pca_torch
+from deep_learning_pipeline.utils import split_dataset, pca_torch
 
 def Dataset_generation(data_gen_cfg, val_split)-> Tuple[Dataset, Dataset]:
     """Generate synthetic image dataset with class labels and train/validation split."""

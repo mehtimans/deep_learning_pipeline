@@ -9,6 +9,11 @@ logs/Autoencoder/*
 logs/CNN/*
 !logs/CNN/.gitkeep
 
+logs/LSTM/*
+!logs/LSTM/.gitkeep
+
+logs/GRU/*
+!logs/GRU/.gitkeep
 
 __pycache__/
 *.pyc

@@ -13,8 +13,8 @@ import torch
 import torch.nn as nn
 from typing import List, Tuple
 
-from deep_learning_course.utils import get_activation
-from deep_learning_course.models import MLPNetwork
+from deep_learning_pipeline.utils import get_activation
+from deep_learning_pipeline.models import MLPNetwork
 
 
 class CNNNetwork(nn.Module):
