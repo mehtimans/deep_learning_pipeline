@@ -19,32 +19,68 @@ import copy
 
 from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_ROOT_DIR
 
+# def split_dataset(
+#     X: Tensor,
+#     Y: Tensor,
+#     val_split: float = 0.2,
+# ) -> Tuple[Dataset, Dataset]:
+#     """
+#     Split tensors into training and validation sets
+
+#     Args:
+#         X (Tensor): Feature tensor of shape (N, D)
+#         Y (Tensor): Target tensor of shape (N, 1) or (N,)
+#         val_split (float): Fraction of the dataset used for validation
+
+#     Returns:
+#         train_dataset (Dataset): Training Dataset
+#         val_dataset (Dataset): Validation Dataset
+#     """
+
+#     ds = TensorDataset(X, Y)
+
+#     n_val = int(len(ds) * val_split)
+#     n_train = len(ds) - n_val
+
+#     train_ds, val_ds = random_split(ds, [n_train, n_val])
+
+#     return train_ds, val_ds
+
 def split_dataset(
     X: Tensor,
     Y: Tensor,
     val_split: float = 0.2,
-) -> Tuple[Dataset, Dataset]:
+    test_split: float = 0.0,
+) -> Tuple[Dataset, Dataset, Dataset]:
     """
-    Split tensors into training and validation sets
+    Split tensors into training, validation and test sets
 
     Args:
         X (Tensor): Feature tensor of shape (N, D)
         Y (Tensor): Target tensor of shape (N, 1) or (N,)
         val_split (float): Fraction of the dataset used for validation
+        test_split (float): Fraction of the dataset used for test
+
 
     Returns:
         train_dataset (Dataset): Training Dataset
         val_dataset (Dataset): Validation Dataset
+        test_dataset (Dataset): Test Dataset
     """
+    if val_split + test_split >= 1:
+        raise ValueError(
+            "val_split + test_split must be smaller than 1"
+    )
 
     ds = TensorDataset(X, Y)
 
     n_val = int(len(ds) * val_split)
-    n_train = len(ds) - n_val
+    n_test = int(len(ds) * test_split)
+    n_train = len(ds) - n_val - n_test
 
-    train_ds, val_ds = random_split(ds, [n_train, n_val])
+    train_ds, val_ds, test_ds = random_split(ds, [n_train, n_val, n_test])
 
-    return train_ds, val_ds
+    return train_ds, val_ds, test_ds
 
 def get_dataloader(
         train_ds: Dataset, 

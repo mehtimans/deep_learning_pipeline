@@ -50,7 +50,7 @@ def Dataset_generation(data_gen_cfg, val_split)-> Tuple[Dataset, Dataset]:
         )
         labels_i = torch.full((data_gen_cfg.samples_per_class,), class_id)
         
-        train_ds_i, val_ds_i = split_dataset(samples_i, labels_i, val_split)
+        train_ds_i, val_ds_i, _ = split_dataset(samples_i, labels_i, val_split)
         train_ds_list.append(train_ds_i)
         val_ds_list.append(val_ds_i)
 

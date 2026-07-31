@@ -86,7 +86,7 @@ if __name__ == "__main__":
     print("Y shape", Y.size())
 
     # split
-    train_ds, val_ds = split_dataset(X, Y, cfg.evaluation.val_split)
+    train_ds, val_ds, _ = split_dataset(X, Y, cfg.evaluation.val_split)
 
     # get dataloaders
     train_dl, val_dl = get_dataloader(train_ds, val_ds, cfg.training.batch_size)
