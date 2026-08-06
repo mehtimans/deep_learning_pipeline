@@ -10,7 +10,9 @@ or research purposes.
 # Date: July 2026
 """
 import re
-from typing import Tuple, List
+from typing import Tuple, List, Dict
+from typing import Counter as CounterType
+from collections import Counter
 
 def load_data(path_pos: str, path_neg: str) -> Tuple[List[str], List[int]]:
     """Load pos/neg files, return (texts, labels) with 1=pos, 0=neg."""
@@ -33,3 +35,62 @@ def whitespace_tokenizer(text: str) -> List[str]:
     text = text.lower()
     text = re.sub(r"[^a-z0-9\s]", "", text)
     return text.split()
+
+def build_vocabulary(
+        tokenized_text: List[List[str]], vocab_size: int = 5000,
+) -> Tuple[Dict[str, int], CounterType[str]]:
+    """
+    Build a frequency-based vocabulary from tokenized training texts.
+
+    The padding token is assigned ID 0, and the unknown token is
+    assigned ID 1. The remaining IDs are assigned to the most
+    frequent tokens.
+
+    Args:
+        tokenized_texts: Tokenized training samples.
+        vocab_size: Maximum total vocabulary size, including special tokens.
+
+    Returns:
+        word_to_id: Mapping from tokens to integer IDs.
+        token_counts: Token-frequency counter.
+    """
+
+    if vocab_size < 2 : 
+        raise ValueError("vocab_size must be at least 2.")
+
+    token_counts = Counter(
+        token 
+        for sentence in tokenized_text
+        for token in sentence
+    )
+
+    # Sort by descending frequency and then alphabetically.
+    ranked_tokens = sorted(
+        token_counts.items(),
+        key=lambda item: (-item[1], item[0]),
+    )
+
+    most_frequent_tokens = ranked_tokens[:vocab_size - 2]
+
+    PAD_TOKEN = "<pad>"
+    UNK_TOKEN = "<unk>"
+
+    PAD_ID = 0
+    UNK_ID = 1
+
+    word_to_id = {
+        PAD_TOKEN: PAD_ID,
+        UNK_TOKEN: UNK_ID
+    }
+    
+    for token, _ in most_frequent_tokens:
+        word_to_id[token] = len(word_to_id)
+
+    return word_to_id, token_counts
+    
+
+
+
+
+
+
