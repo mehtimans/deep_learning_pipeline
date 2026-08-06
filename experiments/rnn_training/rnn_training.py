@@ -37,7 +37,7 @@ if __name__ == "__main__":
     X, Y = load_data(path_pos, path_neg)
     print(f"Total samples: {len(X)}")
 
-    # whitespace tocenize the input text 
+    # Tokenize the input texts using the whitespace tokenizer
     tokenized_inputs = [
         whitespace_tokenizer(sentence)
         for sentence in X]
@@ -45,7 +45,9 @@ if __name__ == "__main__":
     # print(f"length of tokenized X is {len(tokenized_inputs)}")
     # print(f"tokenized X is {tokenized_inputs[:3]}")
 
-    build_vocabulary(tokenized_inputs)
+    word_to_id, token_counts = build_vocabulary(tokenized_inputs)
+    # print(f"word_to_id {len(token_counts)}")
+
 
     # for name, experiment in MODEL_REGISTRY.items():
 

@@ -36,61 +36,113 @@ def whitespace_tokenizer(text: str) -> List[str]:
     text = re.sub(r"[^a-z0-9\s]", "", text)
     return text.split()
 
-def build_vocabulary(
-        tokenized_text: List[List[str]], vocab_size: int = 5000,
-) -> Tuple[Dict[str, int], CounterType[str]]:
-    """
-    Build a frequency-based vocabulary from tokenized training texts.
-
-    The padding token is assigned ID 0, and the unknown token is
-    assigned ID 1. The remaining IDs are assigned to the most
-    frequent tokens.
-
-    Args:
-        tokenized_texts: Tokenized training samples.
-        vocab_size: Maximum total vocabulary size, including special tokens.
-
-    Returns:
-        word_to_id: Mapping from tokens to integer IDs.
-        token_counts: Token-frequency counter.
-    """
-
-    if vocab_size < 2 : 
-        raise ValueError("vocab_size must be at least 2.")
-
-    token_counts = Counter(
-        token 
-        for sentence in tokenized_text
-        for token in sentence
-    )
-
-    # Sort by descending frequency and then alphabetically.
-    ranked_tokens = sorted(
-        token_counts.items(),
-        key=lambda item: (-item[1], item[0]),
-    )
-
-    most_frequent_tokens = ranked_tokens[:vocab_size - 2]
-
-    PAD_TOKEN = "<pad>"
-    UNK_TOKEN = "<unk>"
-
-    PAD_ID = 0
-    UNK_ID = 1
-
-    word_to_id = {
-        PAD_TOKEN: PAD_ID,
-        UNK_TOKEN: UNK_ID
-    }
-    
-    for token, _ in most_frequent_tokens:
-        word_to_id[token] = len(word_to_id)
-
-    return word_to_id, token_counts
-    
+from collections import Counter
+from typing import Counter as CounterType
+from typing import Dict, List, Tuple
 
 
+class Vocabulary:
+    """Frequency-based vocabulary for tokenized text."""
+
+    def __init__(self, vocab_size: int = 5000) -> None:
+        if vocab_size < 2:
+            raise ValueError("vocab_size must be at least 2.")
+
+        self.vocab_size = vocab_size
+
+        self.pad_token = "<pad>"
+        self.unk_token = "<unk>"
+
+        self.pad_id = 0
+        self.unk_id = 1
+
+        self.word_to_id: Dict[str, int] = {
+            self.pad_token: self.pad_id,
+            self.unk_token: self.unk_id,
+        }
+
+        self.token_counts: CounterType[str] = Counter()
+        self.is_built = False
+
+    def build(
+        self,
+        tokenized_texts: List[List[str]],
+    ) -> None:
+        """
+        Build a frequency-based vocabulary from tokenized training texts.
+
+        Tokens are sorted by descending frequency. Tokens with equal
+        frequencies are sorted alphabetically.
+
+        Args:
+            tokenized_texts: Tokenized training samples.
+
+        Returns:
+            word_to_id: Mapping from tokens to integer IDs.
+            token_counts: Frequency count for every training token.
+        """
+
+        self.token_counts = Counter(
+            token
+            for sentence in tokenized_texts
+            for token in sentence
+        )
+
+        ranked_tokens = sorted(
+            self.token_counts.items(),
+            key=lambda item: (-item[1], item[0]),
+        )
+
+        number_of_special_tokens = 2
+        maximum_regular_tokens = (
+            self.vocab_size - number_of_special_tokens
+        )
+
+        most_frequent_tokens = ranked_tokens[
+            :maximum_regular_tokens
+        ]
+
+        # Reset the vocabulary before rebuilding it.
+        self.word_to_id = {
+            self.pad_token: self.pad_id,
+            self.unk_token: self.unk_id,
+        }
+
+        for token, _ in most_frequent_tokens:
+            self.word_to_id[token] = len(self.word_to_id)
+
+        self.is_built = True
 
 
+    def encode(self, tokens: List[str]) -> List[int]:
+        """
+        Convert tokens into IDs using the constructed vocabulary.
 
+        Tokens not present in the vocabulary are mapped to <unk>.
+        """
 
+        if not self.is_built:
+            raise RuntimeError(
+                "The vocabulary must be built before encoding tokens."
+            )
+
+        return [
+            self.word_to_id.get(token, self.unk_id)
+            for token in tokens
+        ]
+
+    def encode_batch(
+        self,
+        tokenized_texts: List[List[str]],
+    ) -> List[List[int]]:
+        """Encode multiple tokenized text samples."""
+
+        return [
+            self.encode(tokens)
+            for tokens in tokenized_texts
+        ]
+
+    def __len__(self) -> int:
+        """Return the current vocabulary size."""
+
+        return len(self.word_to_id)
