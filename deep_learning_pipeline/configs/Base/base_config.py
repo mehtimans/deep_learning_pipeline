@@ -13,6 +13,7 @@ or research purposes.
 class BaseConfig():
     seed = 42 # Random seed for reproducibility
     device = 'cuda'
+
     class training:
         hidden_dims = [64, 32, 16] # Dimensions of hidden layers
         epochs = 3000
@@ -42,6 +43,7 @@ class BaseConfig():
 
     class evaluation:
         val_split = 0.2 # Proportion of training data to use for validation
+        test_split = 0.15
         load_run = -1 
 
     class logger:
