@@ -45,6 +45,5 @@ class RecurrentCfg(BaseConfig):
         load_run = -1
 
     class logger(BaseConfig.logger):
-        log_dir = -1
         experiment = "rnn_training"
         dataset = "rt_polarity"
