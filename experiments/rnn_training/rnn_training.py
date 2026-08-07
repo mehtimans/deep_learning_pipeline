@@ -22,7 +22,7 @@ from model_registry import MODEL_REGISTRY
 from deep_learning_pipeline.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
 from deep_learning_pipeline.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
 from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_RESOURCES_DIR
-from text_processor import load_data, whitespace_tokenizer, build_vocabulary
+from text_processor import load_data, whitespace_tokenizer, Vocabulary
 
 
 if __name__ == "__main__":
@@ -40,12 +40,21 @@ if __name__ == "__main__":
     # Tokenize the input texts using the whitespace tokenizer
     tokenized_inputs = [
         whitespace_tokenizer(sentence)
-        for sentence in X]
+        for sentence in X
+        ]   
 
     # print(f"length of tokenized X is {len(tokenized_inputs)}")
     # print(f"tokenized X is {tokenized_inputs[:3]}")
 
-    word_to_id, token_counts = build_vocabulary(tokenized_inputs)
+    max_length = max( 
+        len(sentence)
+        for sentence in tokenized_inputs
+        )            
+
+    # print(f"max length of sentences is {max_length}")
+
+    
+    # word_to_id, token_counts = build_vocabulary(tokenized_inputs)
     # print(f"word_to_id {len(token_counts)}")
 
 

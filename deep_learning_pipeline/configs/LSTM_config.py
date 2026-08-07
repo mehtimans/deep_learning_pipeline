@@ -27,7 +27,7 @@ class LSTMCfg(BaseConfig):
         loss = "mse"  # Loss function to minimize: "mse", "smooth_l1", "l1", "crossentropy"
         
         class trainer(BaseConfig.training.trainer):
-            trainer_name = "MLP" # Identifier for this specific trainer run
+            trainer_name = "LSTM" # Identifier for this specific trainer run
             metrics = ["mse", "rmse", "r2"] # Metrics to compute and track during training: "mse", "rmse", "r2", "accuracy"
             monitor = "rmse"  # Metric to monitor for early stopping and best model
             mode = "min" # Whether to minimize ('min') or maximize ('max') the monitored metric
@@ -45,7 +45,7 @@ class LSTMCfg(BaseConfig):
         load_run = -1
 
     class logger(BaseConfig.logger):
-        train_label = 'LSTM'
+        train_label = "LSTM"
         save_model_label = "LSTM_JIT_model"
         log_dir = -1 # Directory to save logs (-1 means use default location)
 

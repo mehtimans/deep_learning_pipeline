@@ -17,7 +17,6 @@ from typing import List
 
 from deep_learning_pipeline.utils import get_activation
 
-
 class AutoEncoderNetwork(nn.Module):
     def __init__(self,
                  num_inputs: int,

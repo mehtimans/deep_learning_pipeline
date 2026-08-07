@@ -33,20 +33,22 @@ def whitespace_tokenizer(text: str) -> List[str]:
     """
 
     text = text.lower()
-    text = re.sub(r"[^a-z0-9\s]", "", text)
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
     return text.split()
-
-from collections import Counter
-from typing import Counter as CounterType
-from typing import Dict, List, Tuple
-
 
 class Vocabulary:
     """Frequency-based vocabulary for tokenized text."""
 
-    def __init__(self, vocab_size: int = 5000) -> None:
+    def __init__(
+            self, 
+            vocab_size: int = 5000, 
+            max_length: int = 100) -> None:
+
         if vocab_size < 2:
             raise ValueError("vocab_size must be at least 2.")
+
+        if max_length <= 0:
+            raise ValueError("max_length must be greater than zero.")
 
         self.vocab_size = vocab_size
 
@@ -64,6 +66,8 @@ class Vocabulary:
         self.token_counts: CounterType[str] = Counter()
         self.is_built = False
 
+        self.max_length = max_length
+
     def build(
         self,
         tokenized_texts: List[List[str]],
@@ -76,10 +80,6 @@ class Vocabulary:
 
         Args:
             tokenized_texts: Tokenized training samples.
-
-        Returns:
-            word_to_id: Mapping from tokens to integer IDs.
-            token_counts: Frequency count for every training token.
         """
 
         self.token_counts = Counter(
@@ -112,8 +112,7 @@ class Vocabulary:
             self.word_to_id[token] = len(self.word_to_id)
 
         self.is_built = True
-
-
+        
     def encode(self, tokens: List[str]) -> List[int]:
         """
         Convert tokens into IDs using the constructed vocabulary.
@@ -131,14 +130,24 @@ class Vocabulary:
             for token in tokens
         ]
 
-    def encode_batch(
+    def pad(self, token_ids: List[int]) -> List[int]:
+        """
+        Pad or truncate an encoded sequence to the configured maximum length.
+        """
+        token_ids = token_ids[:self.max_length]
+
+        padding_length = self.max_length - len(token_ids)
+
+        return token_ids + [self.pad_id] * padding_length
+
+    def encode_and_pad_batch(
         self,
         tokenized_texts: List[List[str]],
     ) -> List[List[int]]:
-        """Encode multiple tokenized text samples."""
-
+        """Encode and pad multiple tokenized text samples."""
+        
         return [
-            self.encode(tokens)
+            self.pad(self.encode(tokens))
             for tokens in tokenized_texts
         ]
 
