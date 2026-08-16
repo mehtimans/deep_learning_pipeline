@@ -7,29 +7,32 @@ or research purposes.
 
 # Author: mahdi mansouri
 # GitHub: https://github.com/mehtimans
-# Date: March 2026
+# Date: August 2026
 """
-
 
 import torch
 import torch.nn as nn
-from typing import List
+from typing import Type
 
-from .Base_Recurrent_Network import BaseRecurrentNetwork
+from deep_learning_pipeline.utils import get_activation
 
-class GRUNetwork(nn.Module):
+class BaseRecurrentNetwork(nn.Module):
+    """Base class for recurrent sequence models."""
     def __init__ (self,
+                  recurrent_cls: Type[nn.Module],
                   num_inputs: int,
                   num_outputs: int,
                   hidden_size: int = 64,
                   num_layers: int = 4,
                   activation: str = 'softsign',
                   **kwargs):
-        
-        if kwargs:
-            print("GRUNetwork.__init__ got unexpected arguments, which will be ignored: " + str([key for key in kwargs.keys()]))
-        super(GRUNetwork, self).__init__()
 
+        super().__init__()
+
+        if kwargs:
+            print(f"{self.__class__.__name__}.__init__ got unexpected "
+                  f"arguments, which will be ignored: {list(kwargs.keys())}")
+            
         self.num_inputs = num_inputs
         self.num_outputs = num_outputs
         self.hidden_size = hidden_size
@@ -37,24 +40,22 @@ class GRUNetwork(nn.Module):
 
         # normalization buffers 
         self.register_buffer("x_mean", torch.zeros(num_inputs))
-        self.register_buffer("x_std", torch.zeros(num_inputs))
+        self.register_buffer("x_std", torch.ones(num_inputs))
         self.normalize_inputs = False
 
         # activation function 
         self.activation = get_activation(activation)
 
-        # GRU module
-        self.gru = nn.GRU(input_size=self.num_inputs, hidden_size=self.hidden_size, num_layers=self.num_layers, batch_first=True)
+        # Recurrent module
+        self.recurrent = recurrent_cls(input_size=self.num_inputs, hidden_size=self.hidden_size, 
+                                       num_layers=self.num_layers, batch_first=True)
 
-        # MLP head
+        # Output head
         self.linear = nn.Linear(self.hidden_size, self.num_outputs)
 
         self.apply(_orthogonal_init)
         nn.init.orthogonal_(self.linear.weight, gain=0.01)
         nn.init.zeros_(self.linear.bias)
-
-        print(self)
-        # print(f"Actuator Network GRU: GRU({num_inputs}→{hidden_size}×{num_layers}), Linear({hidden_size}→{num_outputs})")
 
     @torch.no_grad()
     def set_normalization(self, mean, std, eps: float = 1e-6):
@@ -73,19 +74,21 @@ class GRUNetwork(nn.Module):
         # x: (batch_size, seq_len, num_inputs)
         if self.normalize_inputs:
             x = (x - self.x_mean) / self.x_std
-        # GRU forward
-        gru_out, _ = self.gru(x)  # gru_out: (batch_size, seq_len, hidden_size)
-        # Take the last output from the sequence
-        last_output = gru_out[:, -1, :]  # (batch_size, hidden_size)
-        # Pass through final linear + activation
+        # Recurrent forward pass
+        recurrent_out, _ = self.recurrent(x)
+
+        # Use the final time-step representation
+        last_output = recurrent_out[:, -1, :]
+
+        # Output head
         return self.linear(self.activation(last_output))  
         
 
 def _orthogonal_init(m: nn.Module):
-    if isinstance(m, nn.Linear) or isinstance(m, nn.GRU):
+    """Apply orthogonal initialization to recurrent and linear layers."""
+    if isinstance(m, (nn.Linear, nn.RNN, nn.LSTM, nn.GRU)):
         for name, param in m.named_parameters():
             if 'weight' in name:
                 nn.init.orthogonal_(param)
             elif 'bias' in name:
                 nn.init.zeros_(param)
-

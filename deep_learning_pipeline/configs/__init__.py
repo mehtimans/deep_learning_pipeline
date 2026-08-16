@@ -11,10 +11,10 @@ or research purposes.
 """
 
 from .Base.base_config import BaseConfig
-from .autoencoder_config import AutoEncoderCfg
-from .mlp_config import MLPCfg
+from .Autoencoder_config import AutoEncoderCfg
+from .MLP_config import MLPCfg
 from .CNN_config import CNNCfg
-from .recurrent_config import RecurrentCfg
+from .Recurrent_config import RecurrentCfg
 from .VanillaRNN_config import VanillaRNNCfg
 from .LSTM_config import LSTMCfg
 from .GRU_config import GRUCfg
