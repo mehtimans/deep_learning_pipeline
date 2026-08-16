@@ -24,7 +24,7 @@ class BaseRecurrentNetwork(nn.Module):
                   num_outputs: int,
                   hidden_size: int = 64,
                   num_layers: int = 4,
-                  activation: str = 'softsign',
+                  activation: str = "softsign",
                   **kwargs):
 
         super().__init__()

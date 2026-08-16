@@ -22,7 +22,7 @@ class MLPNetwork(nn.Module):
                  num_inputs: int,
                  num_outputs: int,
                  network_hidden_dims: List[int] = [32, 32, 32],
-                 activation: str ='softsign',
+                 activation: str ="softsign",
                  **kwargs):
         
         if kwargs:
