@@ -12,6 +12,7 @@ or research purposes.
 import re
 import torch
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import Dataset
 from typing import Tuple, List, Dict
 from typing import Counter as CounterType
 from collections import Counter
@@ -128,6 +129,20 @@ def collate_fn(batch):
     labels = torch.tensor(labels, dtype=torch.long)
 
     return padded_sequences, labels, lengths
+
+class TextDataset(Dataset):
+    def __init__(self, X, Y):
+        if len(X)!=len(Y):
+            raise ValueError("X and Y must have the same number of samples")
+
+        self.X = X
+        self.Y = Y
+
+    def __len__(self):
+        return len(self.X)
+
+    def __getitem__ (self, index):
+        return self.X[index], self.Y[index]
     
 class Vocabulary:
     """Frequency-based vocabulary for tokenized text."""
