@@ -18,7 +18,6 @@ class RecurrentCfg(BaseConfig):
 
     class data():
         vocab_size = 5000
-        max_length = 100
 
     class training(BaseConfig.training):
         epochs = 30
@@ -30,7 +29,6 @@ class RecurrentCfg(BaseConfig):
         loss = "bce_logits"
 
         class trainer(BaseConfig.training.trainer):
-
             metrics = ["accuracy"]
             monitor = "accuracy"
             mode = "max"
@@ -40,8 +38,8 @@ class RecurrentCfg(BaseConfig):
             patience = 10
 
     class evaluation(BaseConfig.evaluation):
-        val_split = 0.15
-        test_split = 0.15
+        val_split = 0.1
+        test_split = 0.1
         load_run = -1
 
     class logger(BaseConfig.logger):

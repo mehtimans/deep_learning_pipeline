@@ -24,7 +24,7 @@ from deep_learning_pipeline.configs import RecurrentCfg, LSTMCfg, GRUCfg, Vanill
 from deep_learning_pipeline.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
 from deep_learning_pipeline.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
 from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_RESOURCES_DIR
-from text_processor import load_data, whitespace_tokenizer, Vocabulary
+from text_processor import load_data, stratified_split_dataset, whitespace_tokenizer, collate_fn, Vocabulary
 
 
 if __name__ == "__main__":
@@ -43,32 +43,21 @@ if __name__ == "__main__":
     path_pos = os.path.join(folder_path, "rt-polarity.pos")
     path_neg = os.path.join(folder_path, "rt-polarity.neg")
     X, Y = load_data(path_pos, path_neg)
-    print(f"Total samples: {len(X)}")
-    # print(f"Total samples: {(X[:3])}")
-    print(f"Total samples: {(Y)}")
-    count = 0;
-    for i in Y:
-        if i ==1:
-            count+=1
-
-    print("++++++++++++++++count", count)
-
-    
 
     # Tokenize the input texts using the whitespace tokenizer
-    tokenized_inputs = [
-        whitespace_tokenizer(sentence)
-        for sentence in X
-        ]   
-    print(f"length of tokenized X is {len(tokenized_inputs)}")
-    print(f"tokenized X is {tokenized_inputs[:3]}")
+    tokenized_inputs = [whitespace_tokenizer(sentence) for sentence in X]   
 
-    max_length = max( 
-        len(sentence)
-        for sentence in tokenized_inputs
-        )            
+    max_length = max(len(sentence) for sentence in tokenized_inputs) 
 
-    # print(f"max length of sentences is {max_length}")
+    X_train, Y_train, X_val, Y_val, X_test, Y_test = stratified_split_dataset(
+        tokenized_inputs,
+        Y,
+        cfg.evaluation.val_split,
+        cfg.evaluation.test_split,)
+
+    vocab = Vocabulary(vocab_size=cfg.data.vocab_size)
+
+    vocab.build(X_train)
 
     
     # word_to_id, token_counts = build_vocabulary(tokenized_inputs)

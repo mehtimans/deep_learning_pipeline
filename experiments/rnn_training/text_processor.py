@@ -11,6 +11,7 @@ or research purposes.
 """
 import re
 import torch
+from torch.nn.utils.rnn import pad_sequence
 from typing import Tuple, List, Dict
 from typing import Counter as CounterType
 from collections import Counter
@@ -37,7 +38,7 @@ def whitespace_tokenizer(text: str) -> List[str]:
     text = re.sub(r"[^a-z0-9\s]", " ", text)
     return text.split()
 
-def split_dataset(
+def stratified_split_dataset(
     X: List[List[str]],
     Y: List[int],
     val_split: float = 0.2,
@@ -93,21 +94,48 @@ def split_dataset(
     X_test = [X[i] for i in test_indices]
     Y_test = [Y[i] for i in test_indices]
 
-    return (X_train, Y_train, X_val, Y_val, X_test, Y_test)
-        
+    return X_train, Y_train, X_val, Y_val, X_test, Y_test
+
+def collate_fn(batch):
+    """
+    Collate variable-length sequences into a mini-batch.
+
+    Each sequence is converted to a tensor and dynamically padded to the
+    length of the longest sequence in the current batch. The original
+    sequence lengths are preserved for use with packed recurrent sequences.
+
+    Args:
+        batch: List of (sequence, label) pairs.
+
+    Returns:
+        padded_sequences: Tensor of shape (batch_size, max_batch_length).
+        labels: Tensor containing the target labels.
+        lengths: Tensor containing the original sequence lengths.
+    """
+
+    sequences, labels = zip(*batch)
+
+    sequences = [torch.tensor(sequence, dtype=torch.long)
+                 for sequence in sequences]
+
+    lengths = torch.tensor([len(sequence) for sequence in sequences], 
+                           dtype=torch.long)
+
+    # Dynamically pad all sequences to the length of the longest
+    # sequence in the current batch.
+    padded_sequences = pad_sequence(sequences, batch_first=True, padding_value=0)
+
+    labels = torch.tensor(labels, dtype=torch.long)
+
+    return padded_sequences, labels, lengths
+    
 class Vocabulary:
     """Frequency-based vocabulary for tokenized text."""
 
-    def __init__(
-            self, 
-            vocab_size: int = 5000, 
-            max_length: int = 100) -> None:
+    def __init__(self, vocab_size: int = 5000) -> None:
 
         if vocab_size < 2:
             raise ValueError("vocab_size must be at least 2.")
-
-        if max_length <= 0:
-            raise ValueError("max_length must be greater than zero.")
 
         self.vocab_size = vocab_size
 
@@ -124,8 +152,6 @@ class Vocabulary:
 
         self.token_counts: CounterType[str] = Counter()
         self.is_built = False
-
-        self.max_length = max_length
 
     def build(
         self,
@@ -189,24 +215,14 @@ class Vocabulary:
             for token in tokens
         ]
 
-    def pad(self, token_ids: List[int]) -> List[int]:
-        """
-        Pad or truncate an encoded sequence to the configured maximum length.
-        """
-        token_ids = token_ids[:self.max_length]
-
-        padding_length = self.max_length - len(token_ids)
-
-        return token_ids + [self.pad_id] * padding_length
-
-    def encode_and_pad_batch(
+    def encode_batch(
         self,
         tokenized_texts: List[List[str]],
     ) -> List[List[int]]:
-        """Encode and pad multiple tokenized text samples."""
+        """Encode multiple tokenized text samples."""
         
         return [
-            self.pad(self.encode(tokens))
+            self.encode(tokens)
             for tokens in tokenized_texts
         ]
 
