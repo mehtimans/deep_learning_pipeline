@@ -19,6 +19,8 @@ from typing import Tuple, List
 import torch 
 
 from model_registry import MODEL_REGISTRY
+
+from deep_learning_pipeline.configs import RecurrentCfg, LSTMCfg, GRUCfg, VanillaRNNCfg
 from deep_learning_pipeline.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
 from deep_learning_pipeline.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
 from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_RESOURCES_DIR
@@ -30,21 +32,36 @@ if __name__ == "__main__":
     # get args
     args = get_args()
 
+    # load base configuration
+    cfg = update_cfg_from_args(args, RecurrentCfg())
+
+    # set the whole Experiment seed (be careful about this)
+    cfg.seed = set_seed(cfg.seed)
+
     # load dataset
     folder_path = os.path.join(DEEP_LEARNING_PIPELINE_RESOURCES_DIR, "data", "rt_polarity")
     path_pos = os.path.join(folder_path, "rt-polarity.pos")
     path_neg = os.path.join(folder_path, "rt-polarity.neg")
     X, Y = load_data(path_pos, path_neg)
     print(f"Total samples: {len(X)}")
+    # print(f"Total samples: {(X[:3])}")
+    print(f"Total samples: {(Y)}")
+    count = 0;
+    for i in Y:
+        if i ==1:
+            count+=1
+
+    print("++++++++++++++++count", count)
+
+    
 
     # Tokenize the input texts using the whitespace tokenizer
     tokenized_inputs = [
         whitespace_tokenizer(sentence)
         for sentence in X
         ]   
-
-    # print(f"length of tokenized X is {len(tokenized_inputs)}")
-    # print(f"tokenized X is {tokenized_inputs[:3]}")
+    print(f"length of tokenized X is {len(tokenized_inputs)}")
+    print(f"tokenized X is {tokenized_inputs[:3]}")
 
     max_length = max( 
         len(sentence)

@@ -10,6 +10,7 @@ or research purposes.
 # Date: July 2026
 """
 import re
+import torch
 from typing import Tuple, List, Dict
 from typing import Counter as CounterType
 from collections import Counter
@@ -36,6 +37,64 @@ def whitespace_tokenizer(text: str) -> List[str]:
     text = re.sub(r"[^a-z0-9\s]", " ", text)
     return text.split()
 
+def split_dataset(
+    X: List[List[str]],
+    Y: List[int],
+    val_split: float = 0.2,
+    test_split: float = 0.0,
+) -> Tuple[List[List[str]], List[int],
+           List[List[str]], List[int],
+           List[List[str]], List[int]]:
+    """
+    Split a tokenized classification dataset into training,
+    validation, and test sets while preserving class proportions.
+    """  
+    if len(X) != len(Y):
+        raise ValueError(f"X and Y must have the same length, got {len(x)} and {len(Y)}.") 
+
+    if not 0.0 <= val_split < 1.0:
+        raise ValueError("val_split must be in range [0, 1).")
+
+    if not 0.0 <= test_split < 1.0:
+        raise ValueError("test_split must be in the range [0, 1).")
+
+    if val_split + test_split >= 1.0:
+        raise ValueError("val_split + test_split must be smaller than 1.") 
+
+    train_indices = []
+    val_indices = []
+    test_indices = []
+
+    # Split each Class independently
+    for label in set(Y): 
+
+        indices = [i for i, y in enumerate(Y)
+                     if y == label] 
+
+        permutation = torch.randperm(len(indices)).tolist()
+
+        indices = [indices[i] for i in permutation]
+
+        n_val = int(len(indices) * val_split)
+        n_test = int(len(indices) * test_split)
+
+        val_indices.extend(indices[:n_val])
+
+        test_indices.extend(indices[n_val:n_val + n_test])
+
+        train_indices.extend(indices[n_val + n_test:])
+
+    X_train = [X[i] for i in train_indices]
+    Y_train = [Y[i] for i in train_indices]
+
+    X_val = [X[i] for i in val_indices]
+    Y_val = [Y[i] for i in val_indices]
+
+    X_test = [X[i] for i in test_indices]
+    Y_test = [Y[i] for i in test_indices]
+
+    return (X_train, Y_train, X_val, Y_val, X_test, Y_test)
+        
 class Vocabulary:
     """Frequency-based vocabulary for tokenized text."""
 

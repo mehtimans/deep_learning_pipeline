@@ -19,33 +19,6 @@ import copy
 
 from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_ROOT_DIR
 
-# def split_dataset(
-#     X: Tensor,
-#     Y: Tensor,
-#     val_split: float = 0.2,
-# ) -> Tuple[Dataset, Dataset]:
-#     """
-#     Split tensors into training and validation sets
-
-#     Args:
-#         X (Tensor): Feature tensor of shape (N, D)
-#         Y (Tensor): Target tensor of shape (N, 1) or (N,)
-#         val_split (float): Fraction of the dataset used for validation
-
-#     Returns:
-#         train_dataset (Dataset): Training Dataset
-#         val_dataset (Dataset): Validation Dataset
-#     """
-
-#     ds = TensorDataset(X, Y)
-
-#     n_val = int(len(ds) * val_split)
-#     n_train = len(ds) - n_val
-
-#     train_ds, val_ds = random_split(ds, [n_train, n_val])
-
-#     return train_ds, val_ds
-
 def split_dataset(
     X: Tensor,
     Y: Tensor,
