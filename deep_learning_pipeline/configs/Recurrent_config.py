@@ -18,6 +18,7 @@ class RecurrentCfg(BaseConfig):
 
     class data():
         vocab_size = 5000
+        embedding_dim = 64
 
     class training(BaseConfig.training):
         epochs = 30

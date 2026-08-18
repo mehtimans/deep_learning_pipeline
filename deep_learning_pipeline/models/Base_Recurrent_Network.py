@@ -13,10 +13,12 @@ or research purposes.
 import torch
 import torch.nn as nn
 from typing import Type
+from torch.nn.utils.rnn import pack_padded_sequence
+from abc import ABC, abstractmethod
 
 from deep_learning_pipeline.utils import get_activation
 
-class BaseRecurrentNetwork(nn.Module):
+class BaseRecurrentNetwork(nn.Module, ABC):
     """Base class for recurrent sequence models."""
     def __init__ (self,
                   recurrent_cls: Type[nn.Module],
@@ -57,6 +59,11 @@ class BaseRecurrentNetwork(nn.Module):
         nn.init.orthogonal_(self.linear.weight, gain=0.01)
         nn.init.zeros_(self.linear.bias)
 
+    @abstractmethod
+    def extract_last_hidden(self, hidden):
+        """Extract the final hidden state from the recurrent module output."""
+        raise NotImplementedError
+
     @torch.no_grad()
     def set_normalization(self, mean, std, eps: float = 1e-6):
         """Store per-feature mean/std (from TRAIN split). Enables normalization in forward()."""
@@ -66,7 +73,7 @@ class BaseRecurrentNetwork(nn.Module):
         self.x_std.copy_(std_t)
         self.normalize_inputs = True 
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, lengths=None) -> torch.Tensor:
         """
         x: (batch_size, seq_len, num_inputs)
         returns: (batch_size, num_outputs)
@@ -74,14 +81,23 @@ class BaseRecurrentNetwork(nn.Module):
         # x: (batch_size, seq_len, num_inputs)
         if self.normalize_inputs:
             x = (x - self.x_mean) / self.x_std
-        # Recurrent forward pass
-        recurrent_out, _ = self.recurrent(x)
 
-        # Use the final time-step representation
-        last_output = recurrent_out[:, -1, :]
+        # Ignore padded time steps when sequence lengths are provided.
+        if lengths is not None:
+            x = pack_padded_sequence(
+                x, 
+                lengths.cpu(), 
+                batch_first=True,
+                enforce_sorted=False)
+        
+        # Recurrent forward pass
+        _, hidden = self.recurrent(x)
+
+        # Extract the last-layer hidden representation.
+        last_hidden = self.extract_last_hidden(self, hidden)
 
         # Output head
-        return self.linear(self.activation(last_output))  
+        return self.linear(self.activation(last_hidden))  
         
 
 def _orthogonal_init(m: nn.Module):

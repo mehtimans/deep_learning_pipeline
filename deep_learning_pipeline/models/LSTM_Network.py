@@ -31,3 +31,8 @@ class LSTMNetwork(BaseRecurrentNetwork):
             num_layers = num_layers,
             activation = activation,
             **kwargs)
+
+    def _extract_last_hidden(self, hidden):
+        """Extract the final hidden state from the recurrent module output."""
+        hidden = hidden[0]
+        return hidden[-1]

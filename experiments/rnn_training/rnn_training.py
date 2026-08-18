@@ -54,7 +54,7 @@ if __name__ == "__main__":
         base_cfg.evaluation.val_split,
         base_cfg.evaluation.test_split,)
 
-    vocab = Vocabulary(vocab_size=cfg.data.vocab_size)
+    vocab = Vocabulary(vocab_size=base_cfg.data.vocab_size)
 
     # Build vocabulary only from training samples
     vocab.build(X_train)
