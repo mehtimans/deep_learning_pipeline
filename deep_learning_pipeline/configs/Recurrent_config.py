@@ -23,6 +23,7 @@ class RecurrentCfg(BaseConfig):
     class training(BaseConfig.training):
         epochs = 30
         batch_size = 128
+        hidden_size = 128
         learning_rate = 1e-3
         activation = 'relu'
         optimizer = "adam"

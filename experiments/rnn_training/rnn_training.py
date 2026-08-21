@@ -100,3 +100,9 @@ if __name__ == "__main__":
         # get logging directory  
         cfg.logger.log_dir = get_log_dir(cfg.logger.log_dir, cfg.logger.train_label)
 
+        backbone = experiment["model"](
+            num_inputs,
+            num_outputs,
+            cfg.training.hidden_size,
+            cfg.training.
+        )
