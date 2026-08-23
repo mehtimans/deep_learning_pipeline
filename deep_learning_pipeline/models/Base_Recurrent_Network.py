@@ -12,21 +12,22 @@ or research purposes.
 
 import torch
 import torch.nn as nn
-from typing import Type
+from typing import Type, List, Optional
 from torch.nn.utils.rnn import pack_padded_sequence
 from abc import ABC, abstractmethod
 
-from deep_learning_pipeline.utils import get_activation
+from deep_learning_pipeline.models import MLPNetwork
 
 class BaseRecurrentNetwork(nn.Module, ABC):
     """Base class for recurrent sequence models."""
-    def __init__ (self,
+    def __init__(self,
                   recurrent_cls: Type[nn.Module],
                   num_inputs: int,
                   num_outputs: int,
                   hidden_size: int = 64,
                   num_layers: int = 4,
-                  activation: str = "softsign",
+                  mlp_network_hidden_dims: Optional[List[int]] = None,
+                  mlp_activation: str = "relu",
                   **kwargs):
 
         super().__init__()
@@ -45,19 +46,21 @@ class BaseRecurrentNetwork(nn.Module, ABC):
         self.register_buffer("x_std", torch.ones(num_inputs))
         self.normalize_inputs = False
 
-        # activation function 
-        self.activation = get_activation(activation)
-
         # Recurrent module
         self.recurrent = recurrent_cls(input_size=self.num_inputs, hidden_size=self.hidden_size, 
                                        num_layers=self.num_layers, batch_first=True)
 
-        # Output head
-        self.linear = nn.Linear(self.hidden_size, self.num_outputs)
+        # Output head, Fully connected layers
+        if mlp_network_hidden_dims is None:
+            mlp_network_hidden_dims = []
+        self.mlp_net = MLPNetwork(
+            num_inputs=self.hidden_size, 
+            num_outputs=num_outputs,
+            network_hidden_dims = mlp_network_hidden_dims,
+            activation = mlp_activation)
 
+        # initialize weights
         self.apply(_orthogonal_init)
-        nn.init.orthogonal_(self.linear.weight, gain=0.01)
-        nn.init.zeros_(self.linear.bias)
 
     @abstractmethod
     def extract_last_hidden(self, hidden):
@@ -94,15 +97,15 @@ class BaseRecurrentNetwork(nn.Module, ABC):
         _, hidden = self.recurrent(x)
 
         # Extract the last-layer hidden representation.
-        last_hidden = self.extract_last_hidden(self, hidden)
+        last_hidden = self.extract_last_hidden(hidden)
 
         # Output head
-        return self.linear(self.activation(last_hidden))  
+        return self.mlp_net(last_hidden)  
         
 
 def _orthogonal_init(m: nn.Module):
     """Apply orthogonal initialization to recurrent and linear layers."""
-    if isinstance(m, (nn.Linear, nn.RNN, nn.LSTM, nn.GRU)):
+    if isinstance(m, (nn.RNN, nn.LSTM, nn.GRU)):
         for name, param in m.named_parameters():
             if 'weight' in name:
                 nn.init.orthogonal_(param)

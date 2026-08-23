@@ -10,26 +10,30 @@ or research purposes.
 # Date: August 2026
 """
 
+import torch 
 import torch.nn as nn
+from typing import List, Optional
 
 from .Base_Recurrent_Network import BaseRecurrentNetwork
 
 class LSTMNetwork(BaseRecurrentNetwork):
     def __init__ (self,
-                  num_inputs: int,
-                  num_outputs: int,
-                  hidden_size: int = 64,
-                  num_layers: int = 4,
-                  activation: str = "softsign",
-                  **kwargs):
+                num_inputs: int,
+                num_outputs: int,
+                hidden_size: int = 64,
+                num_layers: int = 4,
+                mlp_network_hidden_dims: Optional[List[int]] = None,
+                mlp_activation: str = "relu",
+                **kwargs):
         
         super().__init__(
-            recurrent_cls = nn.LSTM,
-            num_inputs = num_inputs,
-            num_outputs = num_outputs,
-            hidden_size = hidden_size,
-            num_layers = num_layers,
-            activation = activation,
+            recurrent_cls=nn.LSTM,
+            num_inputs=num_inputs,
+            num_outputs=num_outputs,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            mlp_network_hidden_dims=mlp_network_hidden_dims,
+            mlp_activation=mlp_activation,
             **kwargs)
 
     def _extract_last_hidden(self, hidden):
