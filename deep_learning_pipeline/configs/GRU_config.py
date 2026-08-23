@@ -15,7 +15,6 @@ from deep_learning_pipeline.configs import RecurrentCfg
 class GRUCfg(RecurrentCfg):
 
     class training(RecurrentCfg.training):
-        hidden_dims = [16, 32] # Dimensions of hidden layers
 
         class trainer(RecurrentCfg.training.trainer):
             trainer_name = "GRU" # Identifier for this specific trainer run

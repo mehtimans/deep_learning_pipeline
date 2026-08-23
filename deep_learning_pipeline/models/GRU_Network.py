@@ -36,6 +36,6 @@ class GRUNetwork(BaseRecurrentNetwork):
             mlp_activation=mlp_activation,
             **kwargs)
 
-    def _extract_last_hidden(self, hidden):
+    def extract_last_hidden(self, hidden):
         """Extract the final hidden state from the recurrent module output."""
         return hidden[-1]

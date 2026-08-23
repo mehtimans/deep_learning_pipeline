@@ -15,7 +15,6 @@ from deep_learning_pipeline.configs import RecurrentCfg
 class VanillaRNNCfg(RecurrentCfg):
 
     class training(RecurrentCfg.training):
-        hidden_dims = [16, 32] # Dimensions of hidden layers
 
         class trainer(RecurrentCfg.training.trainer):
             trainer_name = "VanillaRNN" # Identifier for this specific trainer run

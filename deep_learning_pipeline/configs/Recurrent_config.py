@@ -20,12 +20,16 @@ class RecurrentCfg(BaseConfig):
         vocab_size = 5000
         embedding_dim = 64
 
+    class model(BaseConfig.training):
+        hidden_size = 128
+        num_layers = 1
+        activation = 'relu'
+        hidden_dims = [] # Dimensions of mlp hidden layers for output head
+
     class training(BaseConfig.training):
         epochs = 30
         batch_size = 128
-        hidden_size = 128
         learning_rate = 1e-3
-        activation = 'relu'
         optimizer = "adam"
         weight_decay = 1e-4
         loss = "bce_logits"

@@ -10,17 +10,15 @@ or research purposes.
 # Date: July 2026
 """
 
-
-import pandas as pd 
 import os
 import json 
-from typing import Tuple, List
 
 import torch 
 from torch.utils.data import DataLoader
 
 from model_registry import MODEL_REGISTRY
 
+from deep_learning_pipeline.models import TextRecurrentClassifier
 from deep_learning_pipeline.configs import RecurrentCfg, LSTMCfg, GRUCfg, VanillaRNNCfg
 from deep_learning_pipeline.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
 from deep_learning_pipeline.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
@@ -44,6 +42,7 @@ if __name__ == "__main__":
     path_pos = os.path.join(folder_path, "rt-polarity.pos")
     path_neg = os.path.join(folder_path, "rt-polarity.neg")
     X, Y = load_data(path_pos, path_neg)
+    num_outputs = len(set(Y))
 
     # Tokenize the input texts using the whitespace tokenizer
     tokenized_inputs = [whitespace_tokenizer(sentence) for sentence in X]   
@@ -68,6 +67,7 @@ if __name__ == "__main__":
     val_ds = TextDataset(X_val, Y_val)
     test_ds = TextDataset(X_test, Y_test)
 
+    # Shared loaders
     train_dl = DataLoader(
         train_ds,
         batch_size=base_cfg.training.batch_size,
@@ -100,9 +100,17 @@ if __name__ == "__main__":
         # get logging directory  
         cfg.logger.log_dir = get_log_dir(cfg.logger.log_dir, cfg.logger.train_label)
 
+        # Initialize the recurrent backbone
         backbone = experiment["model"](
-            num_inputs,
+            cfg.data.embedding_dim,
             num_outputs,
-            cfg.training.hidden_size,
-            cfg.training.
-        )
+            cfg.model.hidden_size,
+            cfg.model.num_layers,
+            cfg.model.hidden_dims,
+            cfg.model.activation)
+
+        # Wrap the recurrent backbone with the text embedding classifier
+        recurrent_model = TextRecurrentClassifier(
+            backbone,
+            base_cfg.data.vocab_size,
+            cfg.data.embedding_dim)

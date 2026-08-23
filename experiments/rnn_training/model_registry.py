@@ -9,23 +9,23 @@ or research purposes.
 # GitHub: https://github.com/mehtimans
 # Date: July 2026
 """
-from deep_learning_pipeline.models import LSTM_Network, GRU_Network, VanillaRNN_Network
+from deep_learning_pipeline.models import LSTMNetwork, GRUNetwork, VanillaRNNNetwork
 from deep_learning_pipeline.configs import VanillaRNNCfg, LSTMCfg, GRUCfg
 
 MODEL_REGISTRY = {
 
     "vanilla_rnn" : {
-        "model" : VanillaRNN_Network,
+        "model" : VanillaRNNNetwork,
         "config" : VanillaRNNCfg
     },
 
     "gru": {
-        "model" : GRU_Network,
+        "model" : GRUNetwork,
         "config" : GRUCfg
     },
 
     "lstm" : {
-        "model" : LSTM_Network,
+        "model" : LSTMNetwork,
         "config" : LSTMCfg
     }
 }

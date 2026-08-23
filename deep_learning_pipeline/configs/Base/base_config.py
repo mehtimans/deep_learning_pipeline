@@ -14,13 +14,15 @@ class BaseConfig():
     seed = 42 # Random seed for reproducibility
     device = 'cuda'
 
-    class training:
+    class model: 
         hidden_dims = [64, 32, 16] # Dimensions of hidden layers
+        activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
+
+    class training:
         epochs = 3000
         batch_size = 64 # Mini-batch size for training
         learning_rate = 1e-4
 
-        activation = 'relu' # Activation functions:  elu, relu, selu, crelu, lrelu, tanh, sigmoid
         optimizer = "adam" # Optimizer algorithm: "adam", "sgd","adamw", "iam"
         weight_decay = 1e-4 # L2 regularization, This extra term penalizes large weights.
         momentum = 0.9 # Momentum term (used when optimizer is "sgd")

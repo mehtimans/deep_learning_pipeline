@@ -16,5 +16,6 @@ from .CNN_Network import CNNNetwork
 from .LSTM_Network import LSTMNetwork
 from .GRU_Network import GRUNetwork
 from .VanillaRNN_Network import VanillaRNNNetwork
+from .Text_Recurrent_Classifier import TextRecurrentClassifier
 
 

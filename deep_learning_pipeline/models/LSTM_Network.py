@@ -36,7 +36,7 @@ class LSTMNetwork(BaseRecurrentNetwork):
             mlp_activation=mlp_activation,
             **kwargs)
 
-    def _extract_last_hidden(self, hidden):
+    def extract_last_hidden(self, hidden):
         """Extract the final hidden state from the recurrent module output."""
         hidden = hidden[0]
         return hidden[-1]
