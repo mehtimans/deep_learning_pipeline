@@ -32,7 +32,7 @@ class RecurrentCfg(BaseConfig):
         learning_rate = 1e-3
         optimizer = "adam"
         weight_decay = 1e-4
-        loss = "bce_logits"
+        loss = "crossentropy"
 
         class trainer(BaseConfig.training.trainer):
             metrics = ["accuracy"]
@@ -41,7 +41,14 @@ class RecurrentCfg(BaseConfig):
 
             enable_plots = True
             early_stopping = False
+
+            scheduler = True
             patience = 10
+
+            add_noise = True # Noise injection for training data
+            class noise():
+                noise_std = 0.0 # Standard deviation of the Gaussian noise to add
+                noise_frac = 0.0 # Fraction of samples that will receive noise perturbation
 
     class evaluation(BaseConfig.evaluation):
         val_split = 0.1

@@ -36,6 +36,8 @@ class BaseConfig():
             mode = "min" # Whether to minimize ('min') or maximize ('max') the monitored metric
             enable_plots = True # save plots of metrics
             early_stopping = True
+
+            scheduler = True
             patience = 100 # Number of epochs with no improvement before stopping
 
             add_noise = True # Noise injection for training data

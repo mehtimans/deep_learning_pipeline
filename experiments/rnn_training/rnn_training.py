@@ -22,6 +22,8 @@ from deep_learning_pipeline.models import TextRecurrentClassifier
 from deep_learning_pipeline.configs import RecurrentCfg, LSTMCfg, GRUCfg, VanillaRNNCfg
 from deep_learning_pipeline.utils import get_args, set_seed, update_cfg_from_args, class_to_dict
 from deep_learning_pipeline.utils import split_dataset, get_dataloader, compute_normalization_stats, get_log_dir, save_model_jit
+from deep_learning_pipeline.utils import get_loss, get_optimizer
+from deep_learning_pipeline.pipeline import Trainer
 from deep_learning_pipeline import DEEP_LEARNING_PIPELINE_RESOURCES_DIR
 from text_processor import load_data, stratified_split_dataset, whitespace_tokenizer
 from text_processor import TextDataset, collate_fn, Vocabulary
@@ -42,7 +44,6 @@ if __name__ == "__main__":
     path_pos = os.path.join(folder_path, "rt-polarity.pos")
     path_neg = os.path.join(folder_path, "rt-polarity.neg")
     X, Y = load_data(path_pos, path_neg)
-    num_outputs = len(set(Y))
 
     # Tokenize the input texts using the whitespace tokenizer
     tokenized_inputs = [whitespace_tokenizer(sentence) for sentence in X]   
@@ -52,6 +53,8 @@ if __name__ == "__main__":
         Y,
         base_cfg.evaluation.val_split,
         base_cfg.evaluation.test_split,)
+
+    num_outputs = len(set(Y_train))
 
     vocab = Vocabulary(vocab_size=base_cfg.data.vocab_size)
 
@@ -114,3 +117,52 @@ if __name__ == "__main__":
             backbone,
             base_cfg.data.vocab_size,
             cfg.data.embedding_dim)
+
+        # loss function 
+        loss_fn = get_loss(cfg.training.loss, reduction="mean")
+
+        # Optimizer 
+        optimizer = get_optimizer(cfg.training.optimizer, recurrent_model.parameters(), 
+                              lr=cfg.training.learning_rate, weight_decay=cfg.training.weight_decay)
+
+        # Scheduler
+        scheduler = None
+        if cfg.training.trainer.scheduler:
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                optimizer,
+                mode=cfg.training.trainer.mode,         
+                factor=0.5,   # LR *= factor when plateau
+                patience=cfg.training.trainer.patience,  # epochs with no improvement before reducing LR
+                min_lr=1e-4)
+
+        # Train the model 
+        trainer = Trainer(
+            recurrent_model,
+            train_dl,
+            val_dl,
+            optimizer,
+            loss_fn,
+            trainer_name=cfg.training.trainer.trainer_name,
+            epochs=cfg.training.epochs,
+            scheduler=scheduler, 
+            device=cfg.device,
+            noise_std=cfg.training.trainer.noise.noise_std,
+            noise_frac=cfg.training.trainer.noise.noise_frac,
+            metrics=cfg.training.trainer.metrics,
+            monitor=cfg.training.trainer.monitor,
+            mode=cfg.training.trainer.mode,
+            early_stopping=cfg.training.trainer.early_stopping,
+            patience=cfg.training.trainer.patience,
+            log_dir=cfg.logger.log_dir)
+
+        best_model = trainer.train() # Note: best_model is stored on CPU for portability
+
+        # save model as a jit file
+        model_path = save_model_jit(best_model, cfg.logger.log_dir, cfg.logger.save_model_label)
+
+        # save config
+        config_path = os.path.join(cfg.logger.log_dir, "config.json")
+        with open(config_path, "w", encoding="utf-8") as f:
+            json.dump(cfg_dict, f, indent=4)
+        
+        print(f"config saved to {config_path}")
